@@ -2,7 +2,11 @@
 // Falls back to localhost:8002 for local development.
 const getBackendOrigin = (): string => {
   if (process.env.NEXT_PUBLIC_BACKEND_URL) {
-    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
+    let url = process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+    return url;
   }
   if (typeof window === 'undefined') return 'http://127.0.0.1:8002';
   if (window.location.protocol === 'https:') {
