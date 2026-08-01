@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="./assets/logo.png" alt="SOC-detection — AI-Integrated SOC Platform" width="100%" />
+<picture>
+  <source srcset="./assets/logo.svg" type="image/svg+xml" />
+  <img src="./assets/logo.png" alt="SOC-detection — AI-Integrated SOC Platform" width="100%" />
+</picture>
 
 <br/>
 
@@ -161,6 +164,14 @@ All routes are namespaced under `/api/v1`:
 | `/forensics` | Digital forensics investigation data |
 
 Live alerts stream over WebSocket at `/ws/alerts`.
+
+## Brand Assets
+
+| SVG (`assets/logo.svg`) | PNG (`assets/logo.png`) |
+|---|---|
+| <img src="./assets/logo.svg" width="380" /> | <img src="./assets/logo.png" width="380" /> |
+
+Use the SVG for crisp scaling (docs, site headers); use the PNG where SVG isn't supported (e.g. some social/OG previews).
 
 ## Disclaimer
 
