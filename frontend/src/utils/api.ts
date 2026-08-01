@@ -1,17 +1,23 @@
-const getHostname = () => {
-  if (typeof window === 'undefined') return '127.0.0.1';
-  return window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+// NEXT_PUBLIC_BACKEND_URL is set in Vercel env vars pointing to the Render backend.
+// Falls back to localhost:8002 for local development.
+const getBackendOrigin = (): string => {
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
+  }
+  if (typeof window === 'undefined') return 'http://127.0.0.1:8002';
+  if (window.location.protocol === 'https:') {
+    // same-host deployment (nginx proxy scenario)
+    return `https://${window.location.host}`;
+  }
+  const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+  return `http://${host}:8002`;
 };
 
-const host = getHostname();
+const backendOrigin = getBackendOrigin();
 
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? (window.location.protocol === 'https:' ? `https://${window.location.host}/api/v1` : `http://${host}:8002/api/v1`)
-  : 'http://127.0.0.1:8002/api/v1';
+const API_BASE_URL = `${backendOrigin}/api/v1`;
 
-const WS_BASE_URL = typeof window !== 'undefined'
-  ? (window.location.protocol === 'https:' ? `wss://${window.location.host}/ws/alerts` : `ws://${host}:8002/ws/alerts`)
-  : 'ws://127.0.0.1:8002/ws/alerts';
+const WS_BASE_URL = backendOrigin.replace(/^http/, 'ws') + '/ws/alerts';
 
 export { API_BASE_URL, WS_BASE_URL };
 

@@ -9,7 +9,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
 
     # CORS — allow all origins in dev (override in prod)
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "https://soc-detection.vercel.app",
+        # Allow wildcard vercel domains for preview deployments
+        "https://*.vercel.app"
+    ]
 
     # Database Settings
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
