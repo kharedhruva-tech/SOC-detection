@@ -1,0 +1,71 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f1a"/>
+      <stop offset="55%" stop-color="#0e1626"/>
+      <stop offset="100%" stop-color="#0a1f1c"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5a8"/>
+      <stop offset="100%" stop-color="#00b4ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="18%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#00e5a8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#00e5a8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#glow)"/>
+
+  <!-- subtle grid lines -->
+  <g stroke="#1c2b3a" stroke-width="1" opacity="0.4">
+    <line x1="0" y1="60" x2="1200" y2="60"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="150" y1="0" x2="150" y2="300"/>
+    <line x1="1050" y1="0" x2="1050" y2="300"/>
+  </g>
+
+  <!-- shield / detection icon -->
+  <g transform="translate(90,70)">
+    <path d="M80 0 L160 30 V95 C160 145 125 178 80 195 C35 178 0 145 0 95 V30 Z"
+          fill="#0f1d2b" stroke="url(#accent)" stroke-width="4"/>
+    <!-- radar sweep -->
+    <circle cx="80" cy="95" r="46" fill="none" stroke="#16324a" stroke-width="2"/>
+    <circle cx="80" cy="95" r="30" fill="none" stroke="#16324a" stroke-width="2"/>
+    <circle cx="80" cy="95" r="14" fill="none" stroke="#16324a" stroke-width="2"/>
+    <path d="M80 95 L80 49 A46 46 0 0 1 116 68 Z" fill="url(#accent)" opacity="0.55" filter="url(#soft)"/>
+    <!-- alert blip -->
+    <circle cx="102" cy="72" r="6" fill="#ff4d5e">
+      <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="80" cy="95" r="4" fill="url(#accent)"/>
+  </g>
+
+  <!-- Title -->
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <text x="300" y="130" font-size="54" font-weight="700" fill="#f5f7fa">SOC<tspan fill="url(#accent)">-detection</tspan></text>
+    <text x="302" y="168" font-size="22" fill="#8aa0b4" letter-spacing="1.5">AI-INTEGRATED SECURITY OPERATIONS CENTER PLATFORM</text>
+
+    <!-- feature chips -->
+    <g font-size="16" fill="#c9d6e0">
+      <rect x="300" y="192" width="118" height="30" rx="15" fill="#12212f" stroke="#22384a"/>
+      <text x="318" y="212">SIEM</text>
+
+      <rect x="428" y="192" width="118" height="30" rx="15" fill="#12212f" stroke="#22384a"/>
+      <text x="446" y="212">SOAR</text>
+
+      <rect x="556" y="192" width="118" height="30" rx="15" fill="#12212f" stroke="#22384a"/>
+      <text x="574" y="212">UEBA</text>
+
+      <rect x="684" y="192" width="150" height="30" rx="15" fill="#12212f" stroke="#22384a"/>
+      <text x="702" y="212">AI Analyst</text>
+
+      <rect x="844" y="192" width="180" height="30" rx="15" fill="#12212f" stroke="#22384a"/>
+      <text x="862" y="212">Threat Intel</text>
+    </g>
+  </g>
+</svg>
