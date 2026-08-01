@@ -205,6 +205,9 @@ export default function DashboardLayout({
             <span className={`text-xs font-mono font-bold ${wsConnected ? 'text-neon-green' : 'text-red-500'}`}>
               {wsConnected ? 'ONLINE (STREAMING)' : 'OFFLINE'}
             </span>
+            <span className="text-[10px] font-mono text-slate-600 ml-2">
+              [{WS_BASE_URL}]
+            </span>
           </div>
 
           <div className="flex items-center gap-6">
