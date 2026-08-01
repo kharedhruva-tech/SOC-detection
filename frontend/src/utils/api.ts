@@ -17,7 +17,7 @@ const backendOrigin = getBackendOrigin();
 
 const API_BASE_URL = `${backendOrigin}/api/v1`;
 
-const WS_BASE_URL = backendOrigin.replace(/^http/, 'ws') + '/ws/alerts';
+const WS_BASE_URL = backendOrigin.replace(/^https?/, (match) => match === 'https' ? 'wss' : 'ws') + '/ws/alerts';
 
 export { API_BASE_URL, WS_BASE_URL };
 
