@@ -1,64 +1,69 @@
-# AI-Integrated SOC Platform (SOC-detection)
+<div align="center">
 
-A full-stack Security Operations Center (SOC) simulation platform that brings together SIEM-style detection, UEBA, threat intelligence, digital forensics, SOAR automation, and an AI security analyst into a single real-time dashboard.
+<img src="./assets/logo.png" alt="SOC-detection — AI-Integrated SOC Platform" width="100%" />
 
-**Live demo:** [soc-detection.vercel.app](https://soc-detection.vercel.app)
+<br/>
+
+### AI-Integrated Security Operations Center Platform
+
+A full-stack SOC simulation with real-time SIEM detection, SOAR automation, UEBA, threat intelligence, digital forensics, and an AI security analyst.
+
+[![Live Demo](https://img.shields.io/badge/demo-live-00e5a8?style=for-the-badge)](https://soc-detection.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-React%2019-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+[Live Demo](https://soc-detection.vercel.app) · [Getting Started](#getting-started) · [API Overview](#api-overview) · [Report a Bug](https://github.com/kharedhruva-tech/SOC-detection/issues)
+
+</div>
 
 ---
 
 ## Overview
 
-SOC-detection simulates the day-to-day workflow of a Security Operations Center. A background log generator continuously produces synthetic security events, a detection engine matches them against a rule set mapped to MITRE ATT&CK techniques, and the resulting alerts, incidents, and analytics stream live to a Next.js dashboard over WebSockets. Analysts can triage alerts, run automated response playbooks, investigate assets and user behavior, and get natural-language explanations of threats from an AI-assisted analyst module.
+**SOC-detection** simulates the day-to-day workflow of a real Security Operations Center. A background log generator continuously produces synthetic security events, a rule-based detection engine matches them against patterns mapped to **MITRE ATT&CK** techniques, and the resulting alerts, incidents, and analytics stream live to a Next.js dashboard over WebSockets. Analysts can triage alerts, run automated SOAR playbooks, investigate assets and user behavior, and get natural-language threat explanations from an AI-assisted analyst module.
 
-This project was built as a portfolio/learning platform to demonstrate SIEM, SOAR, UEBA, and threat-intel concepts in an interactive, end-to-end application.
+Built as an end-to-end portfolio project to demonstrate SIEM, SOAR, UEBA, and threat-intel concepts in a single interactive application.
 
 ## Features
 
-- **Real-time SIEM engine** – synthetic log generator + rule-based detection engine that raises alerts (e.g. brute-force attacks, ransomware-style file activity) mapped to MITRE ATT&CK tactics/techniques
-- **Live alert streaming** – WebSocket channel (`/ws/alerts`) pushes new alerts to the dashboard as they're generated
-- **Incident management** – incident timeline, tasks, and lifecycle tracking
-- **SOAR playbooks** – automated response playbooks that can be triggered against incidents
-- **UEBA (User & Entity Behavior Analytics)** – behavioral anomaly views for users and assets
-- **Threat intelligence** – IOC (Indicator of Compromise) tracking with reputation and threat-actor context
-- **Digital forensics** – forensic investigation views tied to incidents
-- **AI Analyst** – natural-language alert explanations, with optional integration for real LLM-backed analysis
-- **Reporting** – SOC reporting views for incidents and detections
-- **Auth** – JWT-based authentication with role-based demo accounts (Super Admin / SOC User)
+| | |
+|---|---|
+| 🛰️ **Real-time SIEM engine** | Synthetic log generator + rule-based detection engine, alerts mapped to MITRE ATT&CK tactics/techniques |
+| ⚡ **Live alert streaming** | WebSocket channel (`/ws/alerts`) pushes new alerts to the dashboard as they occur |
+| 🧩 **Incident management** | Incident timeline, tasks, and full lifecycle tracking |
+| 🤖 **SOAR playbooks** | Automated response playbooks triggered against live incidents |
+| 👤 **UEBA** | User & Entity Behavior Analytics for anomaly detection |
+| 🌐 **Threat intelligence** | IOC tracking with reputation scoring and threat-actor context |
+| 🔍 **Digital forensics** | Forensic investigation views tied to incidents |
+| 🧠 **AI Analyst** | Natural-language alert explanations, with optional real LLM integration |
+| 📊 **Reporting** | SOC reporting dashboards for incidents and detections |
+| 🔐 **Auth** | JWT-based authentication with role-based demo accounts |
 
 ## Tech Stack
 
-**Frontend**
-- [Next.js 16](https://nextjs.org/) (App Router) + React 19 + TypeScript
-- Tailwind CSS 4
-- Recharts (analytics/charts), React Flow (playbook/graph visualization), Framer Motion (animations), Lucide icons
+**Frontend** — Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Recharts · React Flow · Framer Motion
 
-**Backend**
-- [FastAPI](https://fastapi.tiangolo.com/) (Python)
-- SQLAlchemy ORM with SQLite (default) or PostgreSQL
-- JWT auth (PyJWT + Passlib/bcrypt)
-- WebSockets for live alert streaming
+**Backend** — FastAPI · SQLAlchemy (SQLite / PostgreSQL) · PyJWT + Passlib (bcrypt) · WebSockets
 
-**Deployment**
-- Frontend: [Vercel](https://vercel.com/)
-- Backend: [Render](https://render.com/) (see `render.yaml` / `Procfile`)
+**Deployment** — Frontend on [Vercel](https://vercel.com/) · Backend on [Render](https://render.com/)
 
 ## Architecture
 
 ```
-┌─────────────────┐        REST (/api/v1)        ┌──────────────────────┐
-│                 │ ────────────────────────────▶ │                      │
-│  Next.js        │                                │  FastAPI Backend     │
-│  Frontend        │ ◀──────────────────────────── │                      │
-│  (Vercel)        │        WebSocket (/ws/alerts) │  - SIEM engine       │
-│                 │ ◀════════════════════════════ │  - SOAR executor     │
-└─────────────────┘        live alert stream      │  - AI analyst        │
-                                                    │  - Log generator     │
-                                                    │  - UEBA / Intel      │
-                                                    └──────────┬───────────┘
-                                                               │
-                                                    ┌──────────▼───────────┐
-                                                    │  SQLite / PostgreSQL │
-                                                    └──────────────────────┘
+┌─────────────────┐        REST (/api/v1)         ┌──────────────────────┐
+│                 │ ─────────────────────────────▶ │                      │
+│  Next.js         │                                │  FastAPI Backend     │
+│  Frontend         │ ◀───────────────────────────  │                      │
+│  (Vercel)         │        WebSocket (/ws/alerts) │  SIEM · SOAR · AI    │
+│                 │ ◀════════════════════════════  │  Log Gen · UEBA      │
+└─────────────────┘        live alert stream       │  Threat Intel        │
+                                                     └──────────┬───────────┘
+                                                                │
+                                                     ┌──────────▼───────────┐
+                                                     │  SQLite / PostgreSQL │
+                                                     └──────────────────────┘
 ```
 
 ## Project Structure
@@ -80,12 +85,9 @@ SOC-detection/
 │   ├── src/app/
 │   │   ├── dashboard/         # siem, soar, ueba, intel, forensics,
 │   │   │                      # incidents, reports, hunting, vulnerability
-│   │   ├── ai-analyst/
-│   │   ├── alerts/
-│   │   ├── incidents/
-│   │   ├── login/
-│   │   └── playbooks/
+│   │   ├── ai-analyst/ · alerts/ · incidents/ · login/ · playbooks/
 │   └── package.json
+├── assets/                    # README banner/logo
 ├── Procfile
 └── render.yaml
 ```
@@ -95,7 +97,7 @@ SOC-detection/
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 18+ (Next.js 16 requires a recent Node version)
+- Node.js 18+
 - npm / yarn / pnpm
 
 ### Backend Setup
@@ -104,20 +106,16 @@ SOC-detection/
 git clone https://github.com/kharedhruva-tech/SOC-detection.git
 cd SOC-detection
 
-# Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r backend/requirements.txt
-
-# Run the API
 uvicorn backend.app.services.main:app --reload --port 8000
 ```
 
-The API will be available at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
+API available at `http://localhost:8000` · interactive docs at `http://localhost:8000/docs`.
 
-By default the backend uses a local SQLite database (`soc_platform.db`) and seeds it automatically on startup with demo data, including sample users, incidents, alerts, and IOCs.
+By default the backend uses a local SQLite database (`soc_platform.db`) and auto-seeds demo data (users, incidents, alerts, IOCs) on startup.
 
 ### Frontend Setup
 
@@ -127,7 +125,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000`. Point it at your local backend by configuring the API base URL (see `frontend/src` for the API client configuration) if you're not using the deployed backend.
+App available at `http://localhost:3000`. Point it at your local backend by configuring the API base URL in `frontend/src` if you're not using the deployed backend.
 
 ### Environment Variables (Backend)
 
@@ -135,22 +133,22 @@ The app will be available at `http://localhost:3000`. Point it at your local bac
 |---|---|---|
 | `SECRET_KEY` | JWT signing secret | dev placeholder — set a real value in production |
 | `USE_POSTGRES` | Use PostgreSQL instead of SQLite | `false` |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_SERVER` / `POSTGRES_PORT` / `POSTGRES_DB` | PostgreSQL connection settings (used when `USE_POSTGRES=true`) | — |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_SERVER` / `POSTGRES_PORT` / `POSTGRES_DB` | PostgreSQL connection settings | — |
 | `SQLITE_DB_PATH` | Path to local SQLite file | `soc_platform.db` |
 
 ## Deployment
 
-- **Frontend** is deployed on Vercel: [soc-detection.vercel.app](https://soc-detection.vercel.app)
-- **Backend** is configured for Render via `render.yaml`, which installs dependencies from `backend/requirements.txt` and starts the API with:
+- **Frontend** is deployed on Vercel → [soc-detection.vercel.app](https://soc-detection.vercel.app)
+- **Backend** is configured for Render via `render.yaml`, which installs `backend/requirements.txt` and starts the API with:
   ```bash
   uvicorn backend.app.services.main:app --host 0.0.0.0 --port $PORT
   ```
 
 ## API Overview
 
-All backend routes are namespaced under `/api/v1`:
+All routes are namespaced under `/api/v1`:
 
-| Route prefix | Purpose |
+| Route | Purpose |
 |---|---|
 | `/auth` | Login / authentication |
 | `/incidents` | Incident lifecycle management |
@@ -162,16 +160,20 @@ All backend routes are namespaced under `/api/v1`:
 | `/intel` | Threat intelligence / IOCs |
 | `/forensics` | Digital forensics investigation data |
 
-Live alerts are streamed over a WebSocket at `/ws/alerts`.
+Live alerts stream over WebSocket at `/ws/alerts`.
 
 ## Disclaimer
 
-This is a **simulation/demo platform** intended for learning and portfolio purposes. Logs, alerts, and threat intelligence are synthetically generated and should not be used as a real production security monitoring solution.
+This is a **simulation/demo platform** built for learning and portfolio purposes. Logs, alerts, and threat intelligence are synthetically generated and should not be treated as a production security monitoring solution.
 
 ## License
 
-No license has been specified for this project. All rights reserved by the author unless a license is added.
+No license has been specified for this project yet. All rights reserved by the author unless a license is added.
 
 ## Author
 
-Built by [kharedhruva-tech](https://github.com/kharedhruva-tech).
+<div align="center">
+
+Built with 🛡️ by **[kharedhruva-tech](https://github.com/kharedhruva-tech)**
+
+</div>
