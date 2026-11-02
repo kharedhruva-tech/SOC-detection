@@ -1696,10 +1696,10 @@ export default function AttackSurfacePage() {
                 <span className="text-[10px] text-slate-500 uppercase">CAA Records</span>
                 <p
                   className={`font-bold mt-1 ${
-                    dnsResult.caa?.configured ? 'text-emerald-400' : 'text-slate-400'
+                    (dnsResult.caa?.status === 'Configured' || dnsResult.caa?.configured) ? 'text-emerald-400' : 'text-slate-400'
                   }`}
                 >
-                  {dnsResult.caa?.configured ? 'PRESENT' : 'NONE'}
+                  {(dnsResult.caa?.status === 'Configured' || dnsResult.caa?.configured) ? 'PRESENT' : 'NONE'}
                 </p>
               </div>
 
@@ -1719,7 +1719,9 @@ export default function AttackSurfacePage() {
             <div className="space-y-3 text-xs">
               <div className="p-3 rounded bg-slate-950 border border-slate-800 space-y-1">
                 <span className="text-[10px] text-slate-400 uppercase font-bold">A Records:</span>
-                <p className="text-cyan-300">{dnsResult.a_records?.join(', ') || 'None found'}</p>
+                <p className="text-cyan-300">
+                  {dnsResult.a_records?.join(', ') || dnsResult.records?.A?.join(', ') || 'None found'}
+                </p>
               </div>
 
               {dnsResult.spf?.record && (
@@ -1736,15 +1738,15 @@ export default function AttackSurfacePage() {
                 </div>
               )}
 
-              {/* Recommendations */}
-              {dnsResult.recommendations && dnsResult.recommendations.length > 0 && (
+              {/* Recommendations / Concerns */}
+              {(dnsResult.recommendations || dnsResult.concerns) && (dnsResult.recommendations || dnsResult.concerns).length > 0 && (
                 <div className="p-3 rounded bg-amber-950/20 border border-amber-500/30 space-y-1.5">
                   <span className="text-[10px] text-amber-300 uppercase font-bold flex items-center space-x-1">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Hardening Recommendations:</span>
+                    <span>Hardening Recommendations & Findings:</span>
                   </span>
                   <ul className="list-disc pl-4 text-slate-300 space-y-1">
-                    {dnsResult.recommendations.map((rec: string, i: number) => (
+                    {(dnsResult.recommendations || dnsResult.concerns).map((rec: string, i: number) => (
                       <li key={i}>{rec}</li>
                     ))}
                   </ul>
