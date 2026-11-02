@@ -18,7 +18,12 @@ import {
   FileSearch, 
   Database,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  Sliders,
+  AlertOctagon,
+  Bot,
+  Menu,
+  X
 } from 'lucide-react';
 import { WS_BASE_URL } from '@/utils/api';
 
@@ -33,6 +38,7 @@ export default function DashboardLayout({
   const [role, setRole] = useState<string>('');
   const [wsConnected, setWsConnected] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setMounted(true);
@@ -106,8 +112,11 @@ export default function DashboardLayout({
 
   const navItems = [
     { name: 'SOC Operations', path: '/dashboard', icon: Activity },
+    { name: 'Live SIEM Alerts', path: '/alerts', icon: AlertOctagon },
+    { name: 'Detection Rules', path: '/dashboard/rules', icon: Sliders },
     { name: 'Incidents Queue', path: '/dashboard/incidents', icon: ShieldAlert },
     { name: 'SIEM Log Engine', path: '/dashboard/siem', icon: Database },
+    { name: 'AI Analyst Copilot', path: '/ai-analyst', icon: Bot },
     { name: 'SOAR Automation', path: '/dashboard/soar', icon: GitBranch },
     { name: 'Threat Hunting', path: '/dashboard/hunting', icon: Crosshair },
     { name: 'UEBA Baselines', path: '/dashboard/ueba', icon: Users },
@@ -120,26 +129,46 @@ export default function DashboardLayout({
   if (!mounted) return null;
 
   return (
-    <div className="flex h-screen bg-cyber-bg text-slate-200 overflow-hidden scanlines">
+    <div className="flex h-screen bg-[#070913] text-slate-200 overflow-hidden">
+      {/* Mobile Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#070919]/90 border-r border-slate-800 flex flex-col z-20">
+      <aside
+        className={`fixed lg:static top-0 bottom-0 left-0 w-64 bg-[#0a0e1c] border-r border-slate-800/80 flex flex-col z-50 transition-transform duration-200 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-          <div className="w-8 h-8 rounded bg-gradient-to-tr from-neon-purple to-neon-cyan flex items-center justify-center">
-            <Terminal className="w-5 h-5 text-white" />
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-[0_0_12px_rgba(56,189,248,0.3)]">
+              <Terminal className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm tracking-wider text-white">
+                AEGIS <span className="text-cyan-400">SOC</span>
+              </h1>
+              <span className="text-[9px] uppercase text-cyan-400/80 tracking-widest block font-mono font-semibold">
+                Enterprise Defense
+              </span>
+            </div>
           </div>
-          <div>
-            <h1 className="font-bold tracking-wider bg-gradient-to-r from-neon-cyan to-white bg-clip-text text-transparent">
-              AEGIS SOC
-            </h1>
-            <span className="text-[10px] uppercase text-neon-green tracking-widest block font-bold">
-              AI INTEGRATED
-            </span>
-          </div>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden text-slate-400 hover:text-white p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation List */}
-        <nav className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto font-mono text-xs">
           {navItems
             .filter((item) => {
               if (role === 'SOC User') {
@@ -153,81 +182,87 @@ export default function DashboardLayout({
               return true;
             })
             .map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-300 group ${
-                  isActive 
-                    ? 'bg-neon-cyan/10 border-l-2 border-neon-cyan text-neon-cyan font-semibold shadow-[0_0_15px_rgba(0,240,255,0.05)]' 
-                    : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-100'
-                }`}
-              >
-                <Icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-neon-cyan' : 'text-slate-500 group-hover:text-neon-cyan'}`} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+              const Icon = item.icon;
+              const isActive = pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group font-medium ${
+                    isActive 
+                      ? 'bg-cyan-500/15 border-l-2 border-cyan-400 text-cyan-300 shadow-[inset_0_0_12px_rgba(56,189,248,0.1)]' 
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-500 group-hover:text-cyan-400'}`} />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
         </nav>
 
         {/* User Card */}
-        <div className="p-4 border-t border-slate-800 bg-[#090b1c]/80 flex flex-col gap-2">
+        <div className="p-4 border-t border-slate-800/80 bg-[#070914] flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-neon-cyan">
+            <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-cyan-400 text-xs">
               {user.slice(0, 2).toUpperCase()}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-semibold truncate text-slate-200">{user}</p>
-              <p className="text-[10px] text-neon-purple font-mono uppercase truncate">{role}</p>
+              <p className="text-xs font-semibold truncate text-slate-200">{user}</p>
+              <p className="text-[10px] text-cyan-400/80 font-mono uppercase truncate">{role}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 rounded bg-red-950/30 hover:bg-red-900/40 border border-red-900/50 hover:border-red-700 text-xs text-red-400 transition-all duration-300 font-semibold cursor-pointer"
+            className="mt-1 w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded bg-rose-950/30 hover:bg-rose-900/40 border border-rose-900/50 hover:border-rose-700 text-xs text-rose-300 transition-all font-mono cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Terminate Session</span>
+            <LogOut className="w-3.5 h-3.5" />
+            <span>End Session</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-slate-800 bg-[#070919]/60 backdrop-blur-md flex items-center justify-between px-8 z-10">
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-neon-green animate-ping' : 'bg-red-500'}`} />
-            <span className="text-xs font-mono text-slate-400">
-              SOCKET SYSTEM STATUS:
-            </span>
-            <span className={`text-xs font-mono font-bold ${wsConnected ? 'text-neon-green' : 'text-red-500'}`}>
-              {wsConnected ? 'ONLINE (STREAMING)' : 'OFFLINE'}
-            </span>
-            <span className="text-[10px] font-mono text-slate-600 ml-2">
-              [{WS_BASE_URL}]
-            </span>
+        <header className="h-16 border-b border-slate-800/80 bg-[#0a0e1c]/90 backdrop-blur-md flex items-center justify-between px-6 z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden text-slate-400 hover:text-white p-1"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+              <span className="text-xs font-mono text-slate-400 hidden sm:inline">
+                TELEMETRY:
+              </span>
+              <span className={`text-xs font-mono font-bold ${wsConnected ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {wsConnected ? 'LIVE STREAM' : 'OFFLINE'}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-slate-800/40 px-3 py-1.5 rounded-full border border-slate-700/50">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-800 text-xs font-mono text-slate-300">
               {wsConnected ? (
-                <Wifi className="w-4 h-4 text-neon-green" />
+                <Wifi className="w-3.5 h-3.5 text-emerald-400" />
               ) : (
-                <WifiOff className="w-4 h-4 text-red-500" />
+                <WifiOff className="w-3.5 h-3.5 text-rose-400" />
               )}
-              <span className="text-xs font-mono text-slate-300">AEGIS Core API v1</span>
+              <span className="hidden sm:inline">SOC Gateway 8000</span>
             </div>
             
-            <div className="text-xs font-mono text-slate-400 border-l border-slate-800 pl-6">
-              SYSTEM TIME: <span className="text-slate-200">{new Date().toLocaleDateString()}</span>
+            <div className="text-xs font-mono text-slate-400 hidden md:block border-l border-slate-800 pl-4">
+              UTC: <span className="text-slate-200">{new Date().toLocaleTimeString()}</span>
             </div>
           </div>
         </header>
 
         {/* Child Router Content */}
-        <main className="flex-1 overflow-y-auto bg-[#04050d] p-8">
+        <main className="flex-1 overflow-y-auto bg-[#070913] p-6 lg:p-8">
           {children}
         </main>
       </div>

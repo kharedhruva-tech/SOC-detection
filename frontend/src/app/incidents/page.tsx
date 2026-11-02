@@ -41,8 +41,8 @@ export default function IncidentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#232333]">
-              {incidents.map((incident) => (
-                <tr key={incident.id} className="hover:bg-[#0a0a0f] transition-colors group">
+              {incidents.map((incident, idx) => (
+                <tr key={`${incident.id}-${idx}`} className="hover:bg-[#0a0a0f] transition-colors group">
                   <td className="py-4 px-4 font-mono text-[#00f3ff] text-sm">{incident.id}</td>
                   <td className="py-4 px-4 font-medium text-white">{incident.title}</td>
                   <td className="py-4 px-4">

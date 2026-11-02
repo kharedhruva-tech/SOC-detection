@@ -1,14 +1,40 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Database, Search, Cpu, Copy, Check, FileCode, Play, Plus, Activity, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  Database, 
+  Search, 
+  Cpu, 
+  Copy, 
+  Check, 
+  FileCode, 
+  Play, 
+  Plus, 
+  Activity, 
+  Loader2, 
+  Sliders, 
+  X, 
+  Eye, 
+  ExternalLink,
+  Flame,
+  AlertTriangle,
+  ShieldCheck,
+  RotateCcw
+} from 'lucide-react';
 import { api } from '@/utils/api';
 
 export default function SIEMLogs() {
   const [logs, setLogs] = useState<any[]>([]);
+  const [rules, setRules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('All');
   const [activeTab, setActiveTab] = useState<'logs' | 'correlation' | 'ai-generator'>('logs');
   
+  // Selected Event Detail Inspector
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+
   // Rule Generator Form States
   const [ruleType, setRuleType] = useState<'sigma' | 'yara'>('sigma');
   const [title, setTitle] = useState('Detect Suspicious Curl Download');
@@ -20,15 +46,22 @@ export default function SIEMLogs() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogsAndRules();
   }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogsAndRules = async () => {
     try {
-      const data = await api.get('/alerts/');
-      setLogs(data);
+      setLoading(true);
+      const [alertsData, rulesData] = await Promise.all([
+        api.get('/alerts/').catch(() => []),
+        api.get('/detection-rules/').catch(() => [])
+      ]);
+      setLogs(alertsData);
+      setRules(rulesData);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,17 +70,16 @@ export default function SIEMLogs() {
     setLoadingRule(true);
     setGeneratedRule('');
     try {
-      // Direct templates matching the prompt
       if (ruleType === 'sigma') {
         const rule = (
           `title: ${title}\n` +
           `id: ${Math.floor(Math.random() * 10000000).toString(16)}-abcd-ef12-3456-7890abcdef12\n` +
-          `status: experimental\n` +
+          `status: production\n` +
           `description: ${description}\n` +
-          `author: Aegis AI Analyst\n` +
-          `date: 2026/07/30\n` +
+          `author: Aegis SIEM Threat Team\n` +
+          `date: ${new Date().toISOString().slice(0, 10)}\n` +
           `references:\n` +
-          `    - Internal SOC Detection Library\n` +
+          `    - Internal SOC Detection Matrix\n` +
           `tags:\n` +
           `    - attack.execution\n` +
           `    - attack.t1059\n` +
@@ -60,22 +92,22 @@ export default function SIEMLogs() {
           (targetCmd ? `        CommandLine|contains: '${targetCmd}'\n` : '') +
           `    condition: selection\n` +
           `falsepositives:\n` +
-          `    - Legitimate administrative downloads\n` +
+          `    - Verified administrative operations\n` +
           `level: medium`
         );
         setGeneratedRule(rule);
       } else {
         const indicators = targetCmd ? [targetCmd, targetImage] : [targetImage];
-        const cleanName = title.replace(/\s+/g, '_').replace(/[^a-zA-Z0-5_]/g, '');
+        const cleanName = title.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
         const rule = (
           `rule AI_Detect_${cleanName} {\n` +
           `    meta:\n` +
           `        description = "${description}"\n` +
           `        author = "Aegis AI Analyst"\n` +
-          `        date = "2026-07-30"\n` +
+          `        date = "${new Date().toISOString().slice(0, 10)}"\n` +
           `        severity = "medium"\n\n` +
           `    strings:\n` +
-          indicators.map((ind, i) => `        $string_${i} = "${ind}" ascii wide nocase`).join('\n') + '\n' +
+          indicators.map((ind, i) => `        $s${i} = "${ind}" ascii wide nocase`).join('\n') + '\n' +
           `\n    condition:\n` +
           `        all of them\n` +
           `}`
@@ -96,45 +128,85 @@ export default function SIEMLogs() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Filter logs based on search query
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     const q = searchQuery.toLowerCase();
-    return (
-      log.title.toLowerCase().includes(q) ||
-      log.category.toLowerCase().includes(q) ||
-      log.severity.toLowerCase().includes(q) ||
-      (log.description && log.description.toLowerCase().includes(q))
-    );
+    const matchesSearch =
+      log.title?.toLowerCase().includes(q) ||
+      log.category?.toLowerCase().includes(q) ||
+      log.rule_id?.toLowerCase().includes(q) ||
+      (log.source_ip && log.source_ip.includes(q)) ||
+      (log.description && log.description.toLowerCase().includes(q));
+
+    const matchesSeverity =
+      severityFilter === 'All' || log.severity?.toLowerCase() === severityFilter.toLowerCase();
+
+    return matchesSearch && matchesSeverity;
   });
 
-  const correlationRules = [
-    { id: 'RULE_001', name: 'Brute Force Attack Detected', severity: 'High', category: 'Credential Abuse', enabled: true },
-    { id: 'RULE_002', name: 'Ransomware Behavior - Rapid File Modification', severity: 'Critical', category: 'Ransomware', enabled: true },
-    { id: 'RULE_003', name: 'Lateral Movement - WMI Command Execution', severity: 'High', category: 'Lateral Movement', enabled: true },
-    { id: 'RULE_004', name: 'Data Exfiltration to Suspicious Domain', severity: 'High', category: 'Data Exfiltration', enabled: true },
-    { id: 'RULE_005', name: 'Living off the Land - Suspicious Certutil Download', severity: 'Medium', category: 'Defense Evasion', enabled: true },
-    { id: 'RULE_006', name: 'Impossible Travel Connection', severity: 'Medium', category: 'UEBA Anomaly', enabled: true }
-  ];
+  const getSeverityBadge = (severity: string) => {
+    const s = severity?.toLowerCase();
+    if (s === 'critical') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded bg-rose-950/40 text-rose-400 border border-rose-500/40 inline-flex items-center gap-1">
+          <Flame className="w-3 h-3" /> Critical
+        </span>
+      );
+    }
+    if (s === 'high') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded bg-amber-950/40 text-amber-400 border border-amber-500/40 inline-flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" /> High
+        </span>
+      );
+    }
+    if (s === 'medium') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded bg-yellow-950/30 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1">
+          <Activity className="w-3 h-3" /> Medium
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 text-xs font-semibold rounded bg-sky-950/30 text-sky-300 border border-sky-500/40 inline-flex items-center gap-1">
+        <ShieldCheck className="w-3 h-3" /> Low
+      </span>
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      
+    <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-wide text-slate-100 uppercase">
-          SIEM Engine & Detection Rules
-        </h2>
-        <p className="text-xs text-slate-500 font-mono mt-0.5">
-          LOG STORAGE // PARSING PIPELINES // SIGMA & YARA DEPLOYMENTS
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white font-sans">
+                SIEM Log Engine & Event Pipeline
+              </h1>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
+                Normalized Telemetry Ingestion · Real-time Parser Pipeline · Sigma & YARA Generation
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={fetchLogsAndRules}
+          className="px-3 py-2 text-xs font-mono bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded flex items-center gap-2 transition cursor-pointer self-start sm:self-auto"
+        >
+          <RotateCcw className="w-3.5 h-3.5" /> Refresh Telemetry
+        </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 bg-[#070919]/60 px-6 rounded-t-xl">
+      <div className="flex border-b border-slate-800 bg-[#0a0e1c] px-4 rounded-t-xl gap-2">
         {[
-          { id: 'logs', name: 'Normalized Log Ingests', icon: Database },
-          { id: 'correlation', name: 'Correlation Rules', icon: Activity },
-          { id: 'ai-generator', name: 'AI Rule Generator', icon: Cpu }
+          { id: 'logs', name: `Normalized Events (${filteredLogs.length})`, icon: Database },
+          { id: 'correlation', name: `Correlation Rules (${rules.length || 10})`, icon: Sliders },
+          { id: 'ai-generator', name: 'Sigma & YARA Rule Generator', icon: Cpu }
         ].map((tab) => {
           const Icon = tab.icon;
           const isCurrent = activeTab === tab.id;
@@ -142,75 +214,115 @@ export default function SIEMLogs() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`py-3 px-4 border-b-2 font-mono text-xs flex items-center gap-2 transition-all duration-300 ${
+              className={`py-3 px-4 border-b-2 font-mono text-xs flex items-center gap-2 transition-all cursor-pointer ${
                 isCurrent
-                  ? 'border-neon-cyan text-neon-cyan font-bold bg-neon-cyan/5'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-cyan-400 text-cyan-300 font-bold bg-cyan-500/10'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-850/50'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-4 h-4" />
               <span>{tab.name}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Tab 1: Log Search Viewer */}
+      {/* Tab 1: Log Search & Event Stream */}
       {activeTab === 'logs' && (
         <div className="space-y-4">
-          {/* Search bar */}
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-              <Search className="w-4 h-4" />
-            </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search normalized events by category, title, severity, or description parameters..."
-              className="w-full bg-[#0a0d20]/70 border border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-xs text-slate-300 focus:outline-none focus:border-neon-cyan font-mono"
-            />
+          {/* Search & Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="relative w-full sm:w-96">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by event title, IP, category, rule ID..."
+                className="w-full bg-slate-900/90 border border-slate-800 rounded-lg py-2 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono transition"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto font-mono text-xs">
+              <span className="text-slate-400 hidden sm:inline">Severity:</span>
+              <select
+                value={severityFilter}
+                onChange={(e) => setSeverityFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-900 border border-slate-800 rounded text-slate-200 focus:border-cyan-400 outline-none w-full sm:w-auto"
+              >
+                <option value="All">All Severities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
           </div>
 
           {/* Log Table */}
-          <div className="glass-panel rounded-xl border-slate-800 overflow-hidden">
+          <div className="cyber-card p-0 border border-slate-800 overflow-hidden bg-[#0a0d24]">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-[#090b1c]/80 text-slate-400 uppercase tracking-widest text-[9px] border-b border-slate-850">
+              <thead className="bg-slate-900/80 text-slate-400 uppercase tracking-widest text-[10px] border-b border-slate-800">
                 <tr>
                   <th className="p-4">Timestamp</th>
-                  <th className="p-4">Alert Event</th>
+                  <th className="p-4">Rule / Source</th>
+                  <th className="p-4">Event Title</th>
                   <th className="p-4">Category</th>
                   <th className="p-4">Severity</th>
-                  <th className="p-4">Integrity Status</th>
+                  <th className="p-4 text-right">Inspect</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-900/20 text-slate-300">
-                    <td className="p-4 whitespace-nowrap text-slate-500">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="p-4 font-semibold text-slate-200">{log.title}</td>
-                    <td className="p-4 text-neon-cyan">{log.category}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded border text-[10px] uppercase font-bold ${
-                        log.severity === 'Critical' ? 'text-neon-red border-neon-red/20 bg-neon-red/5' :
-                        log.severity === 'High' ? 'text-orange-400 border-orange-400/20 bg-orange-400/5' :
-                        log.severity === 'Medium' ? 'text-neon-yellow border-neon-yellow/20 bg-neon-yellow/5' :
-                        'text-neon-cyan border-neon-cyan/20 bg-neon-cyan/5'
-                      }`}>
-                        {log.severity}
-                      </span>
-                    </td>
-                    <td className="p-4 text-neon-green">NORMALIZED</td>
-                  </tr>
-                ))}
-                {filteredLogs.length === 0 && (
+              <tbody className="divide-y divide-slate-800/60">
+                {loading ? (
                   <tr>
-                    <td colSpan={5} className="p-6 text-center text-slate-600">
-                      NO LOG ENTRYS DETECTED MATCHING QUERY.
+                    <td colSpan={6} className="p-8 text-center text-slate-500">
+                      <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      Loading normalized telemetry...
                     </td>
                   </tr>
+                ) : filteredLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-500">
+                      No security events match query filter.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLogs.map((log, idx) => (
+                    <tr
+                      key={`${log.id || log.event_id || 'log'}-${idx}`}
+                      onClick={() => setSelectedEvent(log)}
+                      className="hover:bg-slate-800/40 text-slate-300 transition-colors cursor-pointer group"
+                    >
+                      <td className="p-4 whitespace-nowrap text-slate-400">
+                        {log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : 'Recent'}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-900 text-cyan-300 border border-slate-800 font-bold">
+                          {log.rule_id || 'SIEM'}
+                        </span>
+                      </td>
+                      <td className="p-4 font-semibold text-white max-w-xs truncate">
+                        {log.title}
+                      </td>
+                      <td className="p-4 text-cyan-400/90 whitespace-nowrap">
+                        {log.category}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        {getSeverityBadge(log.severity)}
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEvent(log);
+                          }}
+                          className="px-2.5 py-1 text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded inline-flex items-center gap-1 transition"
+                        >
+                          <Eye className="w-3 h-3" /> Inspect
+                        </button>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
@@ -218,38 +330,52 @@ export default function SIEMLogs() {
         </div>
       )}
 
-      {/* Tab 2: Correlation Engine Rules */}
+      {/* Tab 2: Correlation Rules Registry */}
       {activeTab === 'correlation' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-xs uppercase text-slate-500 font-mono">
-              Ingestion Correlation Rules Registry
-            </span>
-            <button className="px-3 py-1.5 rounded bg-neon-cyan text-black hover:bg-neon-cyan/80 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer">
-              <Plus className="w-3.5 h-3.5" /> Deploy Custom Rule
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs uppercase text-slate-400 font-mono font-bold tracking-wider">
+                SIEM Ingestion Correlation Rules Matrix (10 Active Rules)
+              </span>
+              <p className="text-xs text-slate-500">
+                Rule-based sliding window detection with automatic incident aggregation
+              </p>
+            </div>
+            <Link
+              href="/dashboard/rules"
+              className="cyber-button font-mono text-xs"
+            >
+              <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Full Rules Manager</span>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {correlationRules.map((rule) => (
-              <div key={rule.id} className="p-4 bg-slate-900/40 rounded-lg border border-slate-800/80 flex items-center justify-between">
-                <div className="space-y-1 font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500">{rule.id}</span>
-                    <span className={`text-[8px] font-mono px-1 rounded uppercase ${
-                      rule.severity === 'Critical' ? 'text-neon-red border border-neon-red/20 bg-neon-red/5' :
-                      rule.severity === 'High' ? 'text-orange-400 border border-orange-400/20 bg-orange-400/5' :
-                      'text-neon-yellow border border-neon-yellow/20 bg-neon-yellow/5'
-                    }`}>
-                      {rule.severity}
-                    </span>
+            {rules.map((rule) => (
+              <div
+                key={rule.rule_id}
+                className="cyber-card p-5 border border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2 font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 text-xs font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                        {rule.rule_id}
+                      </span>
+                      <span className="text-xs text-slate-400">{rule.category}</span>
+                    </div>
+                    {getSeverityBadge(rule.severity)}
                   </div>
-                  <h5 className="text-xs font-semibold text-slate-200">{rule.name}</h5>
-                  <p className="text-[10px] text-slate-500">CATEGORY: {rule.category}</p>
+                  <h4 className="text-sm font-bold text-white mb-1.5">{rule.name}</h4>
+                  <p className="text-xs text-slate-400 line-clamp-2 mb-3">{rule.description}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-neon-green" />
-                  <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold">ACTIVE</span>
+
+                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+                  <span>Detections: <strong className="text-cyan-400">{rule.total_detections || 0}</strong></span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${rule.enabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>
+                    {rule.enabled ? 'ACTIVE' : 'DISABLED'}
+                  </span>
                 </div>
               </div>
             ))}
@@ -257,75 +383,77 @@ export default function SIEMLogs() {
         </div>
       )}
 
-      {/* Tab 3: AI Sigma / YARA Rule Creator */}
+      {/* Tab 3: Sigma & YARA Generator */}
       {activeTab === 'ai-generator' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          {/* Controls Input Form */}
-          <div className="p-5 bg-slate-900/40 border border-slate-800 rounded-xl space-y-4">
-            <h4 className="text-xs uppercase text-slate-400 font-mono tracking-widest font-bold flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-neon-green" /> AI Rule Blueprint
-            </h4>
-            
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="cyber-card p-6">
+            <h3 className="text-base font-bold text-white font-mono mb-1">Rule Spec Definition</h3>
+            <p className="text-xs text-slate-400 mb-4">Generate production-ready Sigma or YARA rules from threat artifacts.</p>
+
             <form onSubmit={handleGenerateRule} className="space-y-4 font-mono text-xs">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-slate-500 uppercase">Rule Target Output</label>
-                <div className="flex gap-2">
-                  {['sigma', 'yara'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setRuleType(type as any)}
-                      className={`flex-1 py-1.5 rounded uppercase font-bold border transition-all duration-300 cursor-pointer ${
-                        ruleType === type
-                          ? 'bg-neon-cyan/15 border-neon-cyan text-neon-cyan'
-                          : 'bg-slate-950 border-slate-850 text-slate-500'
-                      }`}
-                    >
-                      {type} Rule Format
-                    </button>
-                  ))}
+              <div>
+                <label className="text-slate-300 block mb-1">Rule Standard:</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <input
+                      type="radio"
+                      name="ruleType"
+                      checked={ruleType === 'sigma'}
+                      onChange={() => setRuleType('sigma')}
+                      className="accent-cyan-400"
+                    />
+                    <span>Sigma Detection (Log Analytics)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <input
+                      type="radio"
+                      name="ruleType"
+                      checked={ruleType === 'yara'}
+                      onChange={() => setRuleType('yara')}
+                      className="accent-cyan-400"
+                    />
+                    <span>YARA Signature (File / Memory)</span>
+                  </label>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-slate-500 uppercase">Rule Title</label>
+              <div>
+                <label className="text-slate-300 block mb-1">Rule Title:</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="bg-slate-950 border border-slate-850 rounded p-2 text-xs text-slate-300 focus:outline-none focus:border-neon-cyan"
+                  className="cyber-input"
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-slate-500 uppercase">Description</label>
+              <div>
+                <label className="text-slate-300 block mb-1">Description:</label>
                 <textarea
+                  rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  required
-                  className="bg-slate-950 border border-slate-850 rounded p-2 text-xs text-slate-300 focus:outline-none focus:border-neon-cyan h-16"
+                  className="cyber-input"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-slate-500 uppercase">Process Image Match</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 block mb-1">Process / Target Image:</label>
                   <input
                     type="text"
                     value={targetImage}
                     onChange={(e) => setTargetImage(e.target.value)}
-                    required
-                    className="bg-slate-950 border border-slate-850 rounded p-2 text-xs text-slate-300 focus:outline-none focus:border-neon-cyan"
+                    className="cyber-input"
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-slate-500 uppercase">Command Line substring</label>
+                <div>
+                  <label className="text-slate-300 block mb-1">Command String Indicator:</label>
                   <input
                     type="text"
                     value={targetCmd}
                     onChange={(e) => setTargetCmd(e.target.value)}
-                    className="bg-slate-950 border border-slate-850 rounded p-2 text-xs text-slate-300 focus:outline-none focus:border-neon-cyan"
+                    className="cyber-input"
                   />
                 </div>
               </div>
@@ -333,60 +461,118 @@ export default function SIEMLogs() {
               <button
                 type="submit"
                 disabled={loadingRule}
-                className="w-full py-2.5 rounded bg-neon-green hover:bg-neon-green/80 text-black font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(0,255,102,0.15)]"
+                className="cyber-button-primary w-full py-2.5 mt-2"
               >
-                {loadingRule ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Compiling...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileCode className="w-4 h-4" />
-                    <span>Compile AI Detection Rule</span>
-                  </>
-                )}
+                {loadingRule ? 'Compiling Ruleset...' : 'Synthesize Detection Rule'}
               </button>
             </form>
           </div>
 
-          {/* Code Viewer Output */}
-          <div className="flex flex-col gap-2 h-full">
-            <div className="flex justify-between items-center">
-              <span className="text-xs uppercase text-slate-400 font-mono">Rule Definition Output</span>
-              {generatedRule && (
-                <button
-                  onClick={handleCopyRule}
-                  className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3 h-3 text-neon-green" />
-                      <span className="text-neon-green">Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3" />
-                      <span>Copy Code</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-            
-            {generatedRule ? (
-              <pre className="p-5 bg-black/80 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-200 overflow-auto max-h-[350px] leading-relaxed shadow-inner">
-                {generatedRule}
-              </pre>
-            ) : (
-              <div className="h-[300px] border border-dashed border-slate-800 rounded-xl flex items-center justify-center text-xs text-slate-600 font-mono text-center px-6">
-                AWAITING RULE BLUEPRINT GENERATION PARAMS. FILL DETAILS AND CLICK COMPILE.
+          <div className="cyber-card p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-base font-bold text-white font-mono">Compiled Artifact</h3>
+                {generatedRule && (
+                  <button
+                    onClick={handleCopyRule}
+                    className="cyber-button py-1 px-3 text-xs"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                )}
               </div>
-            )}
+
+              <pre className="p-4 bg-slate-950 rounded-lg border border-slate-800 text-cyan-300 font-mono text-xs overflow-x-auto min-h-[300px] leading-relaxed">
+                {generatedRule || '// Configure parameters on the left and synthesize to view rule syntax.'}
+              </pre>
+            </div>
           </div>
         </div>
       )}
 
+      {/* ======================================================== */}
+      {/* EVENT INSPECTION DRAWER */}
+      {/* ======================================================== */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="cyber-card w-full max-w-2xl bg-[#090d20] border-cyan-400/50 shadow-[0_0_35px_rgba(6,182,212,0.25)]">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white font-mono">
+                    Event Inspector · {selectedEvent.rule_id || 'SIEM Ingest'}
+                  </h3>
+                  <p className="text-xs text-slate-400">{selectedEvent.title}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1 font-mono text-xs">
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  Severity: {getSeverityBadge(selectedEvent.severity)}
+                </span>
+                <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  Category: <strong className="text-cyan-400">{selectedEvent.category}</strong>
+                </span>
+                {selectedEvent.source_ip && (
+                  <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                    Source IP: <strong className="text-white">{selectedEvent.source_ip}</strong>
+                  </span>
+                )}
+                {selectedEvent.username && (
+                  <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                    User: <strong className="text-white">{selectedEvent.username}</strong>
+                  </span>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
+                <p className="text-cyan-400 font-bold uppercase text-[11px]">Normalized Event Payload:</p>
+                <p className="text-slate-200 leading-relaxed">{selectedEvent.description}</p>
+              </div>
+
+              {selectedEvent.source_log && (
+                <div>
+                  <p className="text-slate-400 font-bold mb-1.5">Raw Telemetry Source Log:</p>
+                  <pre className="p-3 rounded bg-black/60 border border-slate-800 text-cyan-300 overflow-x-auto text-[10px] leading-tight">
+                    {typeof selectedEvent.source_log === 'string'
+                      ? selectedEvent.source_log
+                      : JSON.stringify(selectedEvent.source_log, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-slate-800 mt-4">
+              <Link
+                href="/alerts"
+                className="text-xs font-mono text-cyan-400 hover:text-white flex items-center gap-1"
+              >
+                <span>Open in Alert Triage</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="px-5 py-2 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded transition"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

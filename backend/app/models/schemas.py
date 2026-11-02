@@ -271,3 +271,151 @@ class IOCResponse(BaseModel):
 # --- Aliases for backward-compat with routers ---
 TimelineResponse = IncidentTimelineResponse
 CommentResponse = IncidentCommentResponse
+
+# --- SIEM Detection Engine Schemas ---
+class SecurityEventCreate(BaseModel):
+    event_id: Optional[str] = None
+    event_type: str
+    username: Optional[str] = None
+    source_ip: Optional[str] = None
+    dest_ip: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    source: Optional[str] = "generic"
+    severity: Optional[str] = "low"
+    details: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    raw_event: Optional[Any] = None
+    is_demo: Optional[bool] = False
+
+class SecurityEventResponse(BaseModel):
+    id: int
+    event_id: str
+    event_type: str
+    username: Optional[str] = None
+    source_ip: Optional[str] = None
+    dest_ip: Optional[str] = None
+    timestamp: datetime
+    source: str
+    severity: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+    raw_event: Optional[str] = None
+    is_demo: bool = False
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class DetectionRuleResponse(BaseModel):
+    id: int
+    rule_id: str
+    name: str
+    description: Optional[str] = None
+    category: str
+    severity: str
+    enabled: bool
+    configuration: Dict[str, Any] = Field(default_factory=dict)
+    mitre_tactics: List[str] = Field(default_factory=list)
+    mitre_techniques: List[str] = Field(default_factory=list)
+    total_detections: int = 0
+    last_triggered_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class DetectionRuleUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    configuration: Optional[Dict[str, Any]] = None
+    severity: Optional[str] = None
+
+class SecurityAlertResponse(BaseModel):
+    id: int
+    alert_id: str
+    rule_id: str
+    rule_name: str
+    title: str
+    description: Optional[str] = None
+    severity: str
+    category: str
+    source_ip: Optional[str] = None
+    username: Optional[str] = None
+    event_timestamp: datetime
+    detection_timestamp: datetime
+    matched_event_ids: List[str] = Field(default_factory=list)
+    evidence: Dict[str, Any] = Field(default_factory=dict)
+    status: str
+    assigned_to: Optional[str] = None
+    incident_id: Optional[int] = None
+    is_demo: bool = False
+    
+    # Advanced Live Triage Fields
+    occurrence_count: int = 1
+    is_duplicate: bool = False
+    correlation_id: Optional[str] = None
+    risk_score: float = 0.0
+    priority: str = "P3"
+    risk_factors: List[Dict[str, Any]] = Field(default_factory=list)
+    threat_intel: Dict[str, Any] = Field(default_factory=dict)
+    ai_analysis: Dict[str, Any] = Field(default_factory=dict)
+    notes: List[Dict[str, Any]] = Field(default_factory=list)
+    audit_trail: List[Dict[str, Any]] = Field(default_factory=list)
+
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class SecurityAlertUpdate(BaseModel):
+    status: Optional[str] = None
+    assigned_to: Optional[str] = None
+    priority: Optional[str] = None
+    note: Optional[str] = None
+
+class RemediationRequest(BaseModel):
+    action: str  # block_ip, isolate_host, disable_user, trigger_playbook
+    parameters: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    approved: bool = True
+
+class DemoGenerateRequest(BaseModel):
+    rule_id: Optional[str] = None
+    count: Optional[int] = 1
+
+class DemoResetResponse(BaseModel):
+    message: str
+    deleted_events_count: int
+    deleted_alerts_count: int
+
+# --- Security Events Schemas for Live Recent Activity Feed ---
+class SecurityEventResponse(BaseModel):
+    id: int
+    event_id: str
+    event_type: str
+    category: str
+    severity: str
+    detection_status: str
+    matched_rule_id: Optional[str] = None
+    risk_score: float = 0.0
+    source_ip: Optional[str] = None
+    username: Optional[str] = None
+    dest_ip: Optional[str] = None
+    source: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: datetime
+    is_demo: bool = False
+
+    class Config:
+        from_attributes = True
+
+class SecurityEventDetailResponse(SecurityEventResponse):
+    raw_event: Optional[str] = None
+    matched_rule: Optional[Dict[str, Any]] = None
+    detection_explanation: Optional[str] = None
+    related_events: List[SecurityEventResponse] = Field(default_factory=list)
+
+class SecurityEventListResponse(BaseModel):
+    items: List[SecurityEventResponse]
+    total: int
+    skip: int
+    limit: int
+

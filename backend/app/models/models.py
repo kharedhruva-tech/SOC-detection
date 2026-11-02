@@ -61,11 +61,20 @@ class Alert(Base):
     mitre_tactics = Column(JSON, default=list)  # ["Persistence", "Execution"]
     mitre_techniques = Column(JSON, default=list)  # ["T1053", "T1059"]
     source_log = Column(Text)  # RAW syslog or EventLog payload
-    status = Column(String, default="New")  # New, Acknowledged, Resolved
+    status = Column(String, default="New")  # New, Acknowledged, Resolved, Investigating, False Positive
     is_duplicate = Column(Boolean, default=False)
     incident_id = Column(Integer, ForeignKey("incidents.id", ondelete="SET NULL"), nullable=True)
     asset_id = Column(Integer, ForeignKey("assets.id", ondelete="SET NULL"), nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    # SIEM Detection Engine fields
+    rule_id = Column(String, index=True, nullable=True)
+    alert_code = Column(String, nullable=True)
+    source_ip = Column(String, nullable=True)
+    username = Column(String, nullable=True)
+    evidence = Column(JSON, default=dict)
+    matched_event_ids = Column(JSON, default=list)
+    is_demo = Column(Boolean, default=False)
     
     asset = relationship("Asset", back_populates="alerts")
     incident = relationship("Incident", back_populates="alerts")
@@ -179,3 +188,84 @@ class IOC(Base):
     threat_actor = Column(String, default="Unknown")
     description = Column(Text)
     last_seen = Column(DateTime, default=datetime.utcnow)
+
+class DetectionRule(Base):
+    __tablename__ = "detection_rules"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    rule_id = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
+    description = Column(Text)
+    category = Column(String, index=True, nullable=False)
+    severity = Column(String, index=True, default="Medium")
+    enabled = Column(Boolean, default=True)
+    configuration = Column(JSON, default=dict)
+    mitre_tactics = Column(JSON, default=list)
+    mitre_techniques = Column(JSON, default=list)
+    total_detections = Column(Integer, default=0)
+    last_triggered_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class SecurityEvent(Base):
+    __tablename__ = "security_events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(String, unique=True, index=True, nullable=False)
+    event_type = Column(String, index=True, nullable=False)
+    category = Column(String, index=True, default="Authentication")
+    detection_status = Column(String, index=True, default="Normal")  # Normal, Alert Triggered, Under Triage
+    matched_rule_id = Column(String, index=True, nullable=True)
+    risk_score = Column(Float, default=0.0)
+    username = Column(String, index=True, nullable=True)
+    source_ip = Column(String, index=True, nullable=True)
+    dest_ip = Column(String, nullable=True)
+    timestamp = Column(DateTime, index=True, default=datetime.utcnow)
+    source = Column(String, default="generic")
+    severity = Column(String, default="low")
+    details = Column(JSON, default=dict)
+    raw_event = Column(Text, nullable=True)
+    is_demo = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class SecurityAlert(Base):
+    __tablename__ = "security_alerts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(String, unique=True, index=True, nullable=False)
+    rule_id = Column(String, index=True, nullable=False)
+    rule_name = Column(String, nullable=False)
+    title = Column(String, index=True, nullable=False)
+    description = Column(Text)
+    severity = Column(String, index=True, default="Medium")
+    category = Column(String, index=True, default="General")
+    source_ip = Column(String, nullable=True, index=True)
+    username = Column(String, nullable=True, index=True)
+    event_timestamp = Column(DateTime, default=datetime.utcnow)
+    detection_timestamp = Column(DateTime, default=datetime.utcnow)
+    matched_event_ids = Column(JSON, default=list)
+    evidence = Column(JSON, default=dict)
+    status = Column(String, index=True, default="New")  # New, Investigating, Escalated, Resolved, False Positive
+    assigned_to = Column(String, nullable=True)
+    incident_id = Column(Integer, ForeignKey("incidents.id", ondelete="SET NULL"), nullable=True)
+    is_demo = Column(Boolean, default=False)
+    
+    # Advanced Live Triage, Deduplication & Threat Intelligence
+    occurrence_count = Column(Integer, default=1)
+    is_duplicate = Column(Boolean, default=False)
+    dedup_key = Column(String, index=True, nullable=True)
+    first_seen_at = Column(DateTime, default=datetime.utcnow)
+    last_seen_at = Column(DateTime, default=datetime.utcnow)
+    destination_ip = Column(String, nullable=True)
+    correlation_id = Column(String, index=True, nullable=True)
+    risk_score = Column(Float, default=0.0)  # 0 to 100
+    risk_factors = Column(JSON, default=list)
+    threat_intel = Column(JSON, default=dict)
+    ai_analysis = Column(JSON, default=dict)
+    priority = Column(String, default="P3")  # P1, P2, P3, P4
+    notes = Column(JSON, default=list)
+    audit_trail = Column(JSON, default=list)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

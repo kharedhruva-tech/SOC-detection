@@ -1,6 +1,16 @@
 // NEXT_PUBLIC_BACKEND_URL is set in Vercel env vars pointing to the Render backend.
-// Falls back to localhost:8002 for local development.
+// Local development uses the FastAPI app on port 8000.
 const getBackendOrigin = (): string => {
+  if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      if (process.env.NEXT_PUBLIC_BACKEND_URL && process.env.NEXT_PUBLIC_BACKEND_URL.includes('localhost')) {
+        return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
+      }
+      return 'http://localhost:8000';
+    }
+  }
+
   if (process.env.NEXT_PUBLIC_BACKEND_URL) {
     let url = process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
     if (!url.startsWith('http')) {
@@ -8,13 +18,12 @@ const getBackendOrigin = (): string => {
     }
     return url;
   }
-  if (typeof window === 'undefined') return 'http://127.0.0.1:8002';
+  if (typeof window === 'undefined') return 'http://127.0.0.1:8000';
   if (window.location.protocol === 'https:') {
     // same-host deployment (nginx proxy scenario)
     return `https://${window.location.host}`;
   }
-  const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-  return `http://${host}:8002`;
+  return 'http://localhost:8000';
 };
 
 const backendOrigin = getBackendOrigin();
@@ -98,6 +107,22 @@ export const api = {
   async put(endpoint: string, data?: any) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
+      headers: getHeaders(),
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ detail: 'API request failed' }));
+      throw new Error(err.detail || 'API request failed');
+    }
+    return response.json();
+  },
+
+  async patch(endpoint: string, data?: any) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PATCH',
       headers: getHeaders(),
       body: data ? JSON.stringify(data) : undefined,
     });

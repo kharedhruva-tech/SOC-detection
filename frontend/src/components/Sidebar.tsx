@@ -10,12 +10,14 @@ import {
   Layers, 
   FileSearch, 
   Briefcase, 
-  TrendingUp 
+  TrendingUp,
+  Sliders
 } from 'lucide-react';
 
 const navItems = [
   { name: 'SOC Operations', href: '/dashboard', icon: Activity },
   { name: 'Incidents Queue', href: '/dashboard/incidents', icon: ShieldAlert },
+  { name: 'Detection Rules', href: '/dashboard/rules', icon: Sliders },
   { name: 'SIEM Log Engine', href: '/dashboard/siem', icon: Database },
   { name: 'SOAR Automation', href: '/dashboard/soar', icon: GitBranch },
   { name: 'Threat Hunting', href: '/dashboard/hunting', icon: Crosshair },

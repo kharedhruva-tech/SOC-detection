@@ -22,8 +22,8 @@ export default function PlaybooksPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {playbooks.map(playbook => (
-          <div key={playbook.id} className="cyber-card flex flex-col">
+        {playbooks.map((playbook, idx) => (
+          <div key={`${playbook.id}-${idx}`} className="cyber-card flex flex-col">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-lg font-bold text-white">{playbook.name}</h2>
               <span className={`px-2 py-1 text-xs rounded border ${

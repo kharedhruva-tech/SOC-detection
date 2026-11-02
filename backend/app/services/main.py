@@ -3,7 +3,7 @@ import asyncio
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 # Allow running this file directly (for example: python backend/app/main.py)
@@ -12,13 +12,15 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal, ensure_schema_compatibility
 from app.api.routers import api_router
 from app.services.log_generator import log_generator
 from app.database_seed import seed_database
 from app.ws_manager import ws_manager
+from app.detection.rule_registry import rule_registry
 
-# Create database tables
+# Safely verify/add compatibility columns and create database tables
+ensure_schema_compatibility()
 Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
@@ -36,6 +38,16 @@ async def lifespan(app: FastAPI):
         print("Database initial sample records verified/seeded successfully.")
     except Exception as e:
         print(f"Database seed notice: {e}")
+
+    try:
+        db = SessionLocal()
+        rule_registry.seed_database(db)
+        rule_registry.sync_from_database(db)
+        db.close()
+        print("SIEM Detection Rules verified and synchronized.")
+    except Exception as e:
+        print(f"SIEM Rule sync notice: {e}")
+
     log_generator.start()
     yield
     # Shutdown logic
@@ -58,10 +70,17 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router, prefix="/api")
+
 
 @app.get("/")
 def root():
     return {"message": "Welcome to the AI-Integrated SOC Platform API"}
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
+
 
 
 # ──────────────────────────────────────────────

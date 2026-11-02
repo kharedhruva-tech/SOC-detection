@@ -236,9 +236,9 @@ export default function IncidentsQueue() {
             <div className="h-full flex items-center justify-center text-slate-500 font-mono text-xs">
               <Loader2 className="w-5 h-5 animate-spin mr-2" /> LOADING TICKETS...
             </div>
-          ) : incidents.map((inc) => (
+          ) : incidents.map((inc, idx) => (
             <div
-              key={inc.id}
+              key={`${inc.id}-${idx}`}
               onClick={() => handleSelectIncident(inc)}
               className={`p-4 transition-all duration-300 cursor-pointer flex flex-col gap-2 ${
                 selectedIncident?.id === inc.id
@@ -508,8 +508,8 @@ export default function IncidentsQueue() {
               {activeTab === 'timeline' && (
                 <div className="space-y-6">
                   <div className="relative border-l border-slate-850 pl-6 ml-3 space-y-6">
-                    {selectedIncident.timeline && selectedIncident.timeline.map((event) => (
-                      <div key={event.id} className="relative">
+                    {selectedIncident.timeline && selectedIncident.timeline.map((event, idx) => (
+                      <div key={`${event.id || 'evt'}-${idx}`} className="relative">
                         {/* Event Dot */}
                         <span className="absolute -left-[30px] top-1.5 w-2 h-2 rounded-full bg-neon-cyan shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
                         
@@ -553,9 +553,9 @@ export default function IncidentsQueue() {
 
                   {/* Tasks List */}
                   <div className="space-y-2">
-                    {selectedIncident.tasks && selectedIncident.tasks.map((task) => (
+                    {selectedIncident.tasks && selectedIncident.tasks.map((task, idx) => (
                       <div 
-                        key={task.id}
+                        key={`${task.id || 'tsk'}-${idx}`}
                         onClick={() => handleToggleTask(task.id)}
                         className={`p-3.5 rounded-lg border flex items-center gap-3 transition-all duration-300 cursor-pointer select-none ${
                           task.status === 'Completed'
@@ -641,8 +641,8 @@ export default function IncidentsQueue() {
                       Ingested Forensic Artifacts
                     </h5>
                     
-                    {selectedIncident.evidence && selectedIncident.evidence.map((ev) => (
-                      <div key={ev.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-lg flex flex-col gap-2 font-mono">
+                    {selectedIncident.evidence && selectedIncident.evidence.map((ev, idx) => (
+                      <div key={`${ev.id || 'ev'}-${idx}`} className="p-4 bg-slate-900/60 border border-slate-850 rounded-lg flex flex-col gap-2 font-mono">
                         <div className="flex justify-between items-start">
                           <span className="text-xs font-semibold text-slate-200">{ev.file_name}</span>
                           <span className="text-[9px] text-slate-500">{(ev.file_size / 1024).toFixed(1)} KB</span>
@@ -699,8 +699,8 @@ export default function IncidentsQueue() {
 
                   {/* Comment Feed */}
                   <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
-                    {selectedIncident.comments && selectedIncident.comments.map((com) => (
-                      <div key={com.id} className="p-3 bg-slate-900/40 rounded-lg border border-slate-950 flex flex-col gap-1.5 font-mono">
+                    {selectedIncident.comments && selectedIncident.comments.map((com, idx) => (
+                      <div key={`${com.id || 'com'}-${idx}`} className="p-3 bg-slate-900/40 rounded-lg border border-slate-950 flex flex-col gap-1.5 font-mono">
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="font-bold text-neon-cyan">{com.author}</span>
                           <span className="text-slate-500">{new Date(com.timestamp).toLocaleString()}</span>

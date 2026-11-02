@@ -107,8 +107,8 @@ export default function ForensicsWorkspace() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {evidenceList.map((ev) => (
-                <div key={ev.id} className="glass-panel p-5 rounded-xl border-slate-800 space-y-4 font-mono text-xs">
+              {evidenceList.map((ev, idx) => (
+                <div key={`${ev.id || 'ev'}-${idx}`} className="glass-panel p-5 rounded-xl border-slate-800 space-y-4 font-mono text-xs">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <span className="text-[10px] text-slate-500">INCIDENT ID: #{ev.incident_id}</span>
