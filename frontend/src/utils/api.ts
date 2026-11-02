@@ -18,12 +18,8 @@ const getBackendOrigin = (): string => {
     }
     return url;
   }
-  if (typeof window === 'undefined') return 'http://127.0.0.1:8000';
-  if (window.location.protocol === 'https:') {
-    // same-host deployment (nginx proxy scenario)
-    return `https://${window.location.host}`;
-  }
-  return 'http://localhost:8000';
+  // Hosted Production fallback (Render Cloud Backend)
+  return 'https://soc-detection-system.onrender.com';
 };
 
 const backendOrigin = getBackendOrigin();

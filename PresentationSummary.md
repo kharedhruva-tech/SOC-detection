@@ -4,6 +4,12 @@
 
 The SOC Detection project is a full-stack Security Operations Center (SOC) platform designed to simulate and demonstrate the day-to-day workflow of a real cybersecurity monitoring environment. The system combines security monitoring, alert detection, incident management, threat intelligence, user behavior analytics, and AI-assisted analysis into a single interactive dashboard.
 
+### Live Links:
+- **Live Frontend (Vercel):** [https://soc-detection.vercel.app](https://soc-detection.vercel.app)
+- **Live Backend API (Render):** [https://soc-detection-system.onrender.com](https://soc-detection-system.onrender.com)
+- **API Documentation (Swagger):** [https://soc-detection-system.onrender.com/docs](https://soc-detection-system.onrender.com/docs)
+- **GitHub Repository:** [https://github.com/kharedhruva-tech/SOC-detection](https://github.com/kharedhruva-tech/SOC-detection)
+
 The main goal of this project is to provide a practical and educational platform that shows how modern SOC operations work in real-world environments. It helps users understand how security events are collected, analyzed, correlated, and responded to using tools and techniques similar to those used in enterprise security teams.
 
 ## Problem Statement

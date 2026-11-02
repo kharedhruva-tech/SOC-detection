@@ -12,12 +12,13 @@
 A full-stack SOC simulation with real-time SIEM detection, SOAR automation, UEBA, threat intelligence, digital forensics, and an AI security analyst.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-00e5a8?style=for-the-badge)](https://soc-detection.vercel.app)
+[![API Docs](https://img.shields.io/badge/API-Swagger-009688?style=for-the-badge&logo=fastapi)](https://soc-detection-system.onrender.com/docs)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-React%2019-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-[Live Demo](https://soc-detection.vercel.app) · [Getting Started](#getting-started) · [API Overview](#api-overview) · [Report a Bug](https://github.com/kharedhruva-tech/SOC-detection/issues)
+[Live Frontend](https://soc-detection.vercel.app) · [Live API Backend](https://soc-detection-system.onrender.com) · [Interactive Swagger Docs](https://soc-detection-system.onrender.com/docs) · [Getting Started](#getting-started) · [Report a Bug](https://github.com/kharedhruva-tech/SOC-detection/issues)
 
 </div>
 
@@ -141,8 +142,11 @@ App available at `http://localhost:3000`. Point it at your local backend by conf
 
 ## Deployment
 
-- **Frontend** is deployed on Vercel → [soc-detection.vercel.app](https://soc-detection.vercel.app)
-- **Backend** is configured for Render via `render.yaml`, which installs `backend/requirements.txt` and starts the API with:
+- **Frontend (Vercel):** [https://soc-detection.vercel.app](https://soc-detection.vercel.app)
+- **Backend (Render):** [https://soc-detection-system.onrender.com](https://soc-detection-system.onrender.com)
+- **Interactive Swagger Documentation:** [https://soc-detection-system.onrender.com/docs](https://soc-detection-system.onrender.com/docs)
+- **Live WebSocket Stream:** `wss://soc-detection-system.onrender.com/ws/alerts`
+- **Render Configuration:** Automated via `render.yaml`, installing `backend/requirements.txt` and starting the API with:
   ```bash
   uvicorn backend.app.services.main:app --host 0.0.0.0 --port $PORT
   ```
@@ -153,17 +157,20 @@ All routes are namespaced under `/api/v1`:
 
 | Route | Purpose |
 |---|---|
-| `/auth` | Login / authentication |
-| `/incidents` | Incident lifecycle management |
-| `/alerts` | Alert retrieval and triage |
-| `/playbooks` | SOAR playbook management & execution |
+| `/auth` | Login / JWT authentication |
+| `/events` | Real-time security events telemetry & multi-criteria filtering |
+| `/detection-rules` | 10 MITRE ATT&CK SIEM detection rules configuration |
+| `/alerts` | Alert retrieval, intelligent deduplication & live triage |
+| `/incidents` | Incident lifecycle & multi-stage attack correlation |
+| `/playbooks` | SOAR playbook management & automated execution |
 | `/assets` | Monitored asset inventory |
-| `/reports` | SOC reporting |
+| `/reports` | SOC executive reporting & threat metrics |
 | `/ueba` | User & entity behavior analytics |
-| `/intel` | Threat intelligence / IOCs |
+| `/intel` | Threat intelligence / IOC indicators |
 | `/forensics` | Digital forensics investigation data |
+| `/demo` | Safe synthetic telemetry & scenario generators |
 
-Live alerts stream over WebSocket at `/ws/alerts`.
+Live alerts and raw security events stream over WebSocket at `/ws/alerts`.
 
 ## Brand Assets
 
