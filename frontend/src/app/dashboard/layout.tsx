@@ -23,7 +23,8 @@ import {
   AlertOctagon,
   Bot,
   Menu,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import { WS_BASE_URL } from '@/utils/api';
 
@@ -95,6 +96,7 @@ export default function DashboardLayout({
         '/dashboard',
         '/dashboard/reports',
         '/dashboard/vulnerability',
+        '/dashboard/asm',
         '/dashboard/soar'
       ];
       if (!allowedPaths.includes(pathname)) {
@@ -121,6 +123,7 @@ export default function DashboardLayout({
     { name: 'Threat Hunting', path: '/dashboard/hunting', icon: Crosshair },
     { name: 'UEBA Baselines', path: '/dashboard/ueba', icon: Users },
     { name: 'Vulnerability Mgmt', path: '/dashboard/vulnerability', icon: Layers },
+    { name: 'Attack Surface (ASM)', path: '/dashboard/asm', icon: Globe },
     { name: 'Digital Forensics', path: '/dashboard/forensics', icon: FileSearch },
     { name: 'Threat Intelligence', path: '/dashboard/intel', icon: Briefcase },
     { name: 'Executive Reports', path: '/dashboard/reports', icon: TrendingUp },

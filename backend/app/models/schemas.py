@@ -691,4 +691,167 @@ class ToolReportGenerateRequest(BaseModel):
     report_type: Optional[str] = "technical"
 
 
+# ──────────────────────────────────────────────
+# Attack Surface Management (ASM) Schemas
+# ──────────────────────────────────────────────
+
+class ASMAssetResponse(BaseModel):
+    id: int
+    asset_id: str
+    name: str
+    asset_type: str
+    domain_name: Optional[str] = None
+    ip_address: Optional[str] = None
+    environment: str
+    owner: Optional[str] = None
+    business_unit: Optional[str] = None
+    criticality: str
+    authorization_status: str
+    discovery_source: str
+    exposure_level: str
+    risk_score: float
+    status: str
+    first_seen: datetime
+    last_seen: datetime
+    metadata_info: Dict[str, Any] = Field(default_factory=dict)
+
+    class Config:
+        from_attributes = True
+
+
+class ASMAssetCreate(BaseModel):
+    name: str
+    asset_type: str
+    domain_name: Optional[str] = None
+    ip_address: Optional[str] = None
+    environment: Optional[str] = "Production"
+    owner: Optional[str] = None
+    business_unit: Optional[str] = None
+    criticality: Optional[str] = "Medium"
+    exposure_level: Optional[str] = "Public Internet"
+    discovery_source: Optional[str] = "Manual"
+
+
+class ASMAssetUpdate(BaseModel):
+    name: Optional[str] = None
+    criticality: Optional[str] = None
+    owner: Optional[str] = None
+    status: Optional[str] = None
+    authorization_status: Optional[str] = None
+    exposure_level: Optional[str] = None
+
+
+class ASMDomainResponse(BaseModel):
+    id: int
+    domain_id: str
+    root_domain: str
+    subdomain: str
+    ip_addresses: List[str] = Field(default_factory=list)
+    cname_target: Optional[str] = None
+    dns_status: str
+    is_apex: bool
+    is_active: bool
+    discovered_via: str
+    first_seen: datetime
+    last_seen: datetime
+    flagged_review: bool
+
+    class Config:
+        from_attributes = True
+
+
+class ASMDomainCreate(BaseModel):
+    root_domain: str
+    subdomain: str
+    ip_addresses: Optional[List[str]] = None
+    cname_target: Optional[str] = None
+
+
+class ASMCertificateResponse(BaseModel):
+    id: int
+    cert_id: str
+    domain_name: str
+    port: int
+    issuer: Optional[str] = None
+    subject_cn: Optional[str] = None
+    sans: List[str] = Field(default_factory=list)
+    valid_from: Optional[str] = None
+    valid_to: Optional[str] = None
+    days_remaining: int
+    status: str
+    tls_version: str
+    cipher_suite: Optional[str] = None
+    chain_status: str
+    last_checked: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ASMServiceResponse(BaseModel):
+    id: int
+    service_id: str
+    asset_id: Optional[str] = None
+    hostname: str
+    ip_address: Optional[str] = None
+    port: int
+    protocol: str
+    service_name: str
+    version: Optional[str] = None
+    is_approved_baseline: bool
+    exposure_status: str
+    risk_level: str
+    last_assessed: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ASMServiceUpdate(BaseModel):
+    is_approved_baseline: Optional[bool] = None
+    exposure_status: Optional[str] = None
+
+
+class ASMChangeLogResponse(BaseModel):
+    id: int
+    change_id: str
+    asset_id: str
+    asset_name: str
+    change_type: str
+    previous_value: Optional[str] = None
+    current_value: Optional[str] = None
+    severity: str
+    description: str
+    timestamp: datetime
+    reviewed: bool
+    reviewed_by: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ASMDNSCheckRequest(BaseModel):
+    domain: str
+    dkim_selector: Optional[str] = "default"
+
+
+class ASMDashboardStats(BaseModel):
+    total_assets: int
+    total_domains: int
+    total_certificates: int
+    expiring_certificates_count: int
+    total_services: int
+    unexpected_services_count: int
+    active_change_events: int
+    average_attack_surface_risk: float
+    asset_types_distribution: Dict[str, int]
+    exposure_distribution: Dict[str, int]
+    environment_distribution: Dict[str, int]
+    critical_perimeter_assets: List[ASMAssetResponse]
+    recent_changes: List[ASMChangeLogResponse]
+    expiring_certificates: List[ASMCertificateResponse]
+    unexpected_services: List[ASMServiceResponse]
+
+
+
 

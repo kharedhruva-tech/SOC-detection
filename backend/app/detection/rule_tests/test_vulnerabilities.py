@@ -289,3 +289,4 @@ def test_vem_api_dashboard_and_findings(db_session):
     rep_payload = schemas.ToolReportGenerateRequest(title="Executive Audit")
     rep = generate_vulnerability_report(payload=rep_payload, db=db_session)
     assert rep["success"] is True
+

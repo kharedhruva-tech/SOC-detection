@@ -11,7 +11,8 @@ import {
   FileSearch, 
   Briefcase, 
   TrendingUp,
-  Sliders
+  Sliders,
+  Globe
 } from 'lucide-react';
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { name: 'Threat Hunting', href: '/dashboard/hunting', icon: Crosshair },
   { name: 'UEBA Baselines', href: '/dashboard/ueba', icon: Users },
   { name: 'Vulnerability & Exposure', href: '/dashboard/vulnerability', icon: Layers },
+  { name: 'Attack Surface (ASM)', href: '/dashboard/asm', icon: Globe },
   { name: 'Digital Forensics', href: '/dashboard/forensics', icon: FileSearch },
   { name: 'Threat Intelligence', href: '/dashboard/intel', icon: Briefcase },
   { name: 'Executive Reports', href: '/dashboard/reports', icon: TrendingUp },

@@ -696,3 +696,4 @@ def explain_vulnerability_finding(payload: Dict[str, Any], db: Session = Depends
         "analysis": analysis,
         "suggested_soar_playbook": "patch_vulnerability",
     }
+

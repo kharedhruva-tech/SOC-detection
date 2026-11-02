@@ -405,4 +405,105 @@ class VulnerabilityAuditLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 
+# ──────────────────────────────────────────────
+# Attack Surface Management (ASM) Models
+# ──────────────────────────────────────────────
+
+class ASMAsset(Base):
+    __tablename__ = "asm_assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    asset_id = Column(String, unique=True, index=True, nullable=False)  # ASM-AST-XXXX
+    name = Column(String, index=True, nullable=False)
+    asset_type = Column(String, index=True, nullable=False)  # Domain, Subdomain, IP Address, Server, Web Application, API, Cloud Asset, Network Device
+    domain_name = Column(String, index=True, nullable=True)
+    ip_address = Column(String, index=True, nullable=True)
+    environment = Column(String, default="Production")  # Development, Staging, Production
+    owner = Column(String, nullable=True)
+    business_unit = Column(String, nullable=True)
+    criticality = Column(String, default="Medium")  # Critical, High, Medium, Low
+    authorization_status = Column(String, default="Authorized")  # Authorized, Pending Review, Decommissioned
+    discovery_source = Column(String, default="Manual")  # Manual, Approved Inventory Import, Cloud Sync
+    exposure_level = Column(String, default="Public Internet")  # Public Internet, DMZ, Internal VPC
+    risk_score = Column(Float, default=0.0)  # 0 to 100 explainable score
+    status = Column(String, default="Active")  # Active, Inactive, Monitored
+    first_seen = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, default=datetime.utcnow)
+    metadata_info = Column(JSON, default=dict)
+
+
+class ASMDomain(Base):
+    __tablename__ = "asm_domains"
+
+    id = Column(Integer, primary_key=True, index=True)
+    domain_id = Column(String, unique=True, index=True, nullable=False)
+    root_domain = Column(String, index=True, nullable=False)
+    subdomain = Column(String, index=True, nullable=False)
+    ip_addresses = Column(JSON, default=list)
+    cname_target = Column(String, nullable=True)
+    dns_status = Column(String, default="Active")  # Active, Inactive, Stale Record
+    is_apex = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    discovered_via = Column(String, default="Inventory Import")
+    first_seen = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, default=datetime.utcnow)
+    flagged_review = Column(Boolean, default=False)
+
+
+class ASMCertificate(Base):
+    __tablename__ = "asm_certificates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cert_id = Column(String, unique=True, index=True, nullable=False)
+    domain_name = Column(String, index=True, nullable=False)
+    port = Column(Integer, default=443)
+    issuer = Column(String, nullable=True)
+    subject_cn = Column(String, nullable=True)
+    sans = Column(JSON, default=list)
+    valid_from = Column(String, nullable=True)
+    valid_to = Column(String, nullable=True)
+    days_remaining = Column(Integer, default=90)
+    status = Column(String, index=True, default="Valid")  # Valid, Expiring Soon (30d), Expiring Soon (15d), Critical Expiring (7d), Expired, Hostname Mismatch
+    tls_version = Column(String, default="TLSv1.3")
+    cipher_suite = Column(String, nullable=True)
+    chain_status = Column(String, default="Trusted")
+    last_checked = Column(DateTime, default=datetime.utcnow)
+
+
+class ASMService(Base):
+    __tablename__ = "asm_services"
+
+    id = Column(Integer, primary_key=True, index=True)
+    service_id = Column(String, unique=True, index=True, nullable=False)
+    asset_id = Column(String, index=True, nullable=True)
+    hostname = Column(String, index=True, nullable=False)
+    ip_address = Column(String, index=True, nullable=True)
+    port = Column(Integer, nullable=False)
+    protocol = Column(String, default="TCP")
+    service_name = Column(String, nullable=False)
+    version = Column(String, nullable=True)
+    is_approved_baseline = Column(Boolean, default=True)
+    exposure_status = Column(String, default="Approved Baseline")  # Approved Baseline, Unexpected Exposure, Flagged for Review
+    risk_level = Column(String, default="Low")  # Low, Medium, High, Critical
+    last_assessed = Column(DateTime, default=datetime.utcnow)
+
+
+class ASMChangeLog(Base):
+    __tablename__ = "asm_change_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    change_id = Column(String, unique=True, index=True, nullable=False)
+    asset_id = Column(String, index=True, nullable=False)
+    asset_name = Column(String, nullable=False)
+    change_type = Column(String, index=True, nullable=False)  # New Asset, Decommissioned, DNS Changed, Cert Expiring, Unexpected Service
+    previous_value = Column(String, nullable=True)
+    current_value = Column(String, nullable=True)
+    severity = Column(String, default="Info")  # Info, Low, Medium, High, Critical
+    description = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    reviewed = Column(Boolean, default=False)
+    reviewed_by = Column(String, nullable=True)
+
+
+
 
