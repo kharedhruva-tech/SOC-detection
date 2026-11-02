@@ -1739,17 +1739,50 @@ export default function AttackSurfacePage() {
               )}
 
               {/* Recommendations / Concerns */}
-              {(dnsResult.recommendations || dnsResult.concerns) && (dnsResult.recommendations || dnsResult.concerns).length > 0 && (
-                <div className="p-3 rounded bg-amber-950/20 border border-amber-500/30 space-y-1.5">
+              {((dnsResult.recommendations && dnsResult.recommendations.length > 0) || (dnsResult.concerns && dnsResult.concerns.length > 0)) && (
+                <div className="p-3 rounded bg-amber-950/20 border border-amber-500/30 space-y-2">
                   <span className="text-[10px] text-amber-300 uppercase font-bold flex items-center space-x-1">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                     <span>Hardening Recommendations & Findings:</span>
                   </span>
-                  <ul className="list-disc pl-4 text-slate-300 space-y-1">
-                    {(dnsResult.recommendations || dnsResult.concerns).map((rec: string, i: number) => (
-                      <li key={i}>{rec}</li>
-                    ))}
-                  </ul>
+                  <div className="space-y-2 text-slate-300">
+                    {(dnsResult.concerns || dnsResult.recommendations || []).map((rec: any, i: number) => {
+                      if (typeof rec === 'string') {
+                        return (
+                          <div key={i} className="flex items-start space-x-2 text-xs">
+                            <span className="text-amber-400">•</span>
+                            <span>{rec}</span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={i} className="p-2.5 rounded bg-slate-950/80 border border-slate-800 space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span
+                              className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-bold ${
+                                rec.severity === 'Critical'
+                                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                  : rec.severity === 'High'
+                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                  : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                              }`}
+                            >
+                              {rec.type || 'DNS'}: {rec.severity || 'Notice'}
+                            </span>
+                            <span className="font-semibold text-slate-200 text-xs">
+                              {rec.detail || rec.message || ''}
+                            </span>
+                          </div>
+                          {rec.recommendation && (
+                            <p className="text-[11px] text-slate-400 pl-1 font-mono">
+                              <span className="text-cyan-400 font-semibold">Action: </span>
+                              {rec.recommendation}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

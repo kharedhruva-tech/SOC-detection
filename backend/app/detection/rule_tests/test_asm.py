@@ -166,3 +166,4 @@ def test_asm_api_endpoints(db_session):
     # 7. Changes list
     changes = get_change_logs(db=db_session)
     assert len(changes) >= 1
+
