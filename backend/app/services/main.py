@@ -45,8 +45,10 @@ async def lifespan(app: FastAPI):
         rule_registry.seed_database(db)
         rule_registry.sync_from_database(db)
         baseline_engine.seed_default_sample_profiles(db)
+        from app.api.routers.vulnerabilities import ensure_default_sample_findings
+        ensure_default_sample_findings(db)
         db.close()
-        print("SIEM Detection Rules and UEBA Baselines verified and synchronized.")
+        print("SIEM Detection Rules, UEBA Baselines, and VEM Findings verified and synchronized.")
     except Exception as e:
         print(f"SIEM Rule sync notice: {e}")
 

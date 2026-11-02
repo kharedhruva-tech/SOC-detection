@@ -22,7 +22,7 @@ const navItems = [
   { name: 'SOAR Automation', href: '/dashboard/soar', icon: GitBranch },
   { name: 'Threat Hunting', href: '/dashboard/hunting', icon: Crosshair },
   { name: 'UEBA Baselines', href: '/dashboard/ueba', icon: Users },
-  { name: 'Vulnerability Mgmt', href: '/dashboard/vulnerability', icon: Layers },
+  { name: 'Vulnerability & Exposure', href: '/dashboard/vulnerability', icon: Layers },
   { name: 'Digital Forensics', href: '/dashboard/forensics', icon: FileSearch },
   { name: 'Threat Intelligence', href: '/dashboard/intel', icon: Briefcase },
   { name: 'Executive Reports', href: '/dashboard/reports', icon: TrendingUp },

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routers import incidents, alerts, playbooks, assets, reports, ueba, intel, forensics, auth, detection
+from app.api.routers import incidents, alerts, playbooks, assets, reports, ueba, intel, forensics, auth, detection, vulnerabilities
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -9,9 +9,12 @@ api_router.include_router(playbooks.router, prefix="/playbooks", tags=["playbook
 api_router.include_router(assets.router, prefix="/assets", tags=["assets"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(ueba.router, prefix="/ueba", tags=["ueba"])
+api_router.include_router(vulnerabilities.router, prefix="/vulnerabilities", tags=["vulnerabilities"])
+api_router.include_router(vulnerabilities.router, prefix="/vulnerability", tags=["vulnerabilities"])
 api_router.include_router(intel.router, prefix="/intel", tags=["intel"])
 api_router.include_router(forensics.router, prefix="/forensics", tags=["forensics"])
 api_router.include_router(detection.router, tags=["detection"])
+
 
 
 

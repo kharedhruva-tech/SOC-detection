@@ -345,3 +345,64 @@ class UEBAFeedback(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ──────────────────────────────────────────────
+# Vulnerability & Exposure Management (VEM) Models
+# ──────────────────────────────────────────────
+
+class VulnerabilityAssessment(Base):
+    __tablename__ = "vulnerability_assessments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    assessment_id = Column(String, unique=True, index=True, nullable=False)  # ASM-YYYYMMDD-XXXX
+    title = Column(String, nullable=False)
+    tool_name = Column(String, index=True, nullable=False)  # Header Checker, SSL/TLS Checker, Dependency Scanner, etc.
+    target = Column(String, nullable=False)
+    status = Column(String, default="Completed")  # Completed, Running, Failed
+    findings_count = Column(Integer, default=0)
+    risk_score = Column(Float, default=0.0)
+    summary = Column(Text)
+    raw_results = Column(JSON, default=dict)
+    initiated_by = Column(String, default="Analyst")
+    is_demo = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class VulnerabilityFinding(Base):
+    __tablename__ = "vulnerability_findings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    finding_id = Column(String, unique=True, index=True, nullable=False)  # VULN-YYYY-XXXX
+    assessment_id = Column(Integer, ForeignKey("vulnerability_assessments.id", ondelete="SET NULL"), nullable=True)
+    asset_id = Column(Integer, ForeignKey("assets.id", ondelete="SET NULL"), nullable=True)
+    cve_id = Column(String, index=True, nullable=True)  # CVE-YYYY-NNNN or None
+    category = Column(String, index=True, nullable=False)  # Security Headers, SSL/TLS, Dependencies, Web App, Misconfiguration, Exposed Port
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    severity = Column(String, index=True, default="Medium")  # Low, Medium, High, Critical
+    cvss_score = Column(Float, default=0.0)
+    risk_score = Column(Float, default=0.0)  # 0 to 100 explainable score
+    confidence = Column(String, default="Confirmed")  # Confirmed, High, Medium, Low
+    evidence = Column(JSON, default=dict)
+    remediation = Column(Text)
+    status = Column(String, index=True, default="Open")  # Open, In Progress, Fixed, Accepted Risk, Verified
+    assigned_to = Column(String, nullable=True)
+    due_date = Column(String, nullable=True)
+    remediation_notes = Column(Text, nullable=True)
+    audit_history = Column(JSON, default=list)  # [{"timestamp": ..., "analyst": ..., "action": ..., "notes": ...}]
+    is_demo = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class VulnerabilityAuditLog(Base):
+    __tablename__ = "vulnerability_audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    finding_id = Column(String, index=True, nullable=False)
+    action = Column(String, nullable=False)  # Created, Status Change, Assignee Updated, Verified
+    analyst = Column(String, nullable=False)
+    details = Column(JSON, default=dict)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+
+

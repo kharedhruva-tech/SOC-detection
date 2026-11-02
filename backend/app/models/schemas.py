@@ -64,6 +64,18 @@ class VulnerabilityResponse(BaseModel):
         from_attributes = True
 
 # --- Asset Schemas ---
+class AssetCreate(BaseModel):
+    name: str
+    ip_address: str
+    hostname: Optional[str] = None
+    os: Optional[str] = "Linux"
+    criticality: Optional[str] = "Medium"
+    risk_score: Optional[float] = 0.0
+    owner: Optional[str] = None
+    business_unit: Optional[str] = None
+    network_location: Optional[str] = "Internal"
+    installed_software: List[Dict[str, Any]] = []
+
 class AssetResponse(BaseModel):
     id: int
     name: str
@@ -536,5 +548,147 @@ class UEBATimelineItem(BaseModel):
 class UEBADemoGenerateRequest(BaseModel):
     scenario: Optional[str] = "all"  # unusual_login_time, dormant_account, mass_resource_access, auth_velocity, bulk_data_exfiltration, all
     entity_id: Optional[str] = None
+
+
+# ──────────────────────────────────────────────
+# Vulnerability & Exposure Management (VEM) Schemas
+# ──────────────────────────────────────────────
+
+class VulnerabilityFindingResponse(BaseModel):
+    id: int
+    finding_id: str
+    assessment_id: Optional[int] = None
+    asset_id: Optional[int] = None
+    cve_id: Optional[str] = None
+    category: str
+    title: str
+    description: Optional[str] = None
+    severity: str
+    cvss_score: float
+    risk_score: float
+    confidence: str
+    evidence: Dict[str, Any] = Field(default_factory=dict)
+    remediation: Optional[str] = None
+    status: str
+    assigned_to: Optional[str] = None
+    due_date: Optional[str] = None
+    remediation_notes: Optional[str] = None
+    audit_history: List[Dict[str, Any]] = Field(default_factory=list)
+    is_demo: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VulnerabilityFindingUpdate(BaseModel):
+    status: Optional[str] = None  # Open, In Progress, Fixed, Accepted Risk, Verified
+    assigned_to: Optional[str] = None
+    due_date: Optional[str] = None
+    remediation_notes: Optional[str] = None
+    verification_notes: Optional[str] = None
+
+
+class VulnerabilityAssessmentResponse(BaseModel):
+    id: int
+    assessment_id: str
+    title: str
+    tool_name: str
+    target: str
+    status: str
+    findings_count: int
+    risk_score: float
+    summary: Optional[str] = None
+    raw_results: Dict[str, Any] = Field(default_factory=dict)
+    initiated_by: str
+    is_demo: bool = False
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VulnerabilityDashboardStats(BaseModel):
+    total_assets: int
+    total_vulnerabilities: int
+    critical_count: int
+    high_count: int
+    medium_count: int
+    low_count: int
+    remediated_count: int
+    average_risk_score: float
+    risk_distribution: Dict[str, int]
+    category_distribution: Dict[str, int]
+    top_vulnerable_assets: List[Dict[str, Any]]
+    recent_assessments: List[VulnerabilityAssessmentResponse]
+    recent_findings: List[VulnerabilityFindingResponse]
+
+
+# Tool Request Payloads
+class ToolHeaderCheckRequest(BaseModel):
+    url: str
+    asset_id: Optional[int] = None
+
+
+class ToolCertCheckRequest(BaseModel):
+    host: str
+    port: Optional[int] = 443
+    asset_id: Optional[int] = None
+
+
+class ToolDependencyCheckRequest(BaseModel):
+    manifest_content: str
+    filename: Optional[str] = "requirements.txt"
+    asset_id: Optional[int] = None
+
+
+class ToolCVELookupRequest(BaseModel):
+    query: str  # CVE ID or software name
+
+
+class ToolPortCheckRequest(BaseModel):
+    asset_id: Optional[int] = None
+    asset_name: Optional[str] = "Authorized Gateway"
+    ip_address: Optional[str] = "192.168.1.50"
+    open_ports: Optional[List[int]] = None
+    scan_text: Optional[str] = None
+    is_internet_facing: Optional[bool] = True
+
+
+class ToolWebAppCheckRequest(BaseModel):
+    url: str
+    asset_id: Optional[int] = None
+
+
+class ToolConfigCheckRequest(BaseModel):
+    config_content: str
+    filename: Optional[str] = "settings.py"
+    asset_id: Optional[int] = None
+
+
+class ToolRiskCalculateRequest(BaseModel):
+    cvss_score: float
+    asset_criticality: Optional[str] = "Medium"
+    network_exposure: Optional[str] = "Internet-facing"
+    exploit_available: Optional[bool] = False
+    cisa_kev: Optional[bool] = False
+    confidence: Optional[str] = "Confirmed"
+
+
+class ToolRemediateRequest(BaseModel):
+    finding_id: int
+    status: str
+    notes: Optional[str] = ""
+    assigned_to: Optional[str] = None
+    due_date: Optional[str] = None
+
+
+class ToolReportGenerateRequest(BaseModel):
+    title: Optional[str] = "Comprehensive Security Assessment Report"
+    target_name: Optional[str] = "Production Infrastructure"
+    assessment_type: Optional[str] = "Full Defensive Surface Audit"
+    report_type: Optional[str] = "technical"
+
 
 
