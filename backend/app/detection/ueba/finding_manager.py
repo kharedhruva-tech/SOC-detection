@@ -234,3 +234,4 @@ class FindingManager:
 
 
 finding_manager = FindingManager()
+

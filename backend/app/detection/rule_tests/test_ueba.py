@@ -296,3 +296,4 @@ def test_ueba_api_endpoints(db_session):
     # 6. Entity timeline
     timeline = get_entity_activity_timeline("jsmith", db=db_session)
     assert len(timeline) >= 1
+

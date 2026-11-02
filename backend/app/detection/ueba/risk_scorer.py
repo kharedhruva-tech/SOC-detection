@@ -105,3 +105,4 @@ class UEBARiskScorer:
 
 
 ueba_risk_scorer = UEBARiskScorer()
+

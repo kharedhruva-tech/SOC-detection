@@ -224,3 +224,4 @@ class UEBADemoService:
 
 
 ueba_demo_service = UEBADemoService()
+

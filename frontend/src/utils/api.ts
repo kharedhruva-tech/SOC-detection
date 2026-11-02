@@ -44,9 +44,20 @@ const getHeaders = () => {
   return headers;
 };
 
+const safeFetch = async (url: string, options: RequestInit): Promise<Response> => {
+  try {
+    return await fetch(url, options);
+  } catch (err: any) {
+    if (err instanceof TypeError && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed'))) {
+      throw new Error(`Unable to reach backend at ${API_BASE_URL}. Ensure the FastAPI server is running on port 8000.`);
+    }
+    throw err;
+  }
+};
+
 export const api = {
   async get(endpoint: string) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: getHeaders(),
     });
@@ -61,7 +72,7 @@ export const api = {
   },
 
   async post(endpoint: string, data?: any) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: getHeaders(),
       body: data ? JSON.stringify(data) : undefined,
@@ -85,7 +96,7 @@ export const api = {
       }
     }
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers,
       body: formData,
@@ -101,7 +112,7 @@ export const api = {
   },
 
   async put(endpoint: string, data?: any) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: data ? JSON.stringify(data) : undefined,
@@ -117,7 +128,7 @@ export const api = {
   },
 
   async patch(endpoint: string, data?: any) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: data ? JSON.stringify(data) : undefined,
@@ -133,7 +144,7 @@ export const api = {
   },
 
   async delete(endpoint: string) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });

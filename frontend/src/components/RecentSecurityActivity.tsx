@@ -102,6 +102,7 @@ export default function RecentSecurityActivity() {
   const [bufferedEvents, setBufferedEvents] = useState<SecurityEventItem[]>([]);
   const [isGeneratingDemo, setIsGeneratingDemo] = useState<boolean>(false);
   const [demoNotice, setDemoNotice] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Filters
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -149,9 +150,11 @@ export default function RecentSecurityActivity() {
       if (data && Array.isArray(data.items)) {
         setEvents(data.items);
         setTotalCount(data.total || data.items.length);
+        setApiError(null);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch security events:', err);
+      setApiError(err.message || 'Unable to connect to backend server on port 8000.');
     } finally {
       setLoading(false);
     }
@@ -514,6 +517,22 @@ export default function RecentSecurityActivity() {
             className="px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[11px] font-bold hover:bg-amber-400 transition"
           >
             Flush & Resume
+          </button>
+        </div>
+      )}
+
+      {/* Backend API Connection Error Banner */}
+      {apiError && (
+        <div className="p-3 rounded-md bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-mono flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{apiError}</span>
+          </div>
+          <button
+            onClick={fetchEvents}
+            className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[11px] font-bold text-white transition shrink-0"
+          >
+            Retry Connection
           </button>
         </div>
       )}
