@@ -419,3 +419,122 @@ class SecurityEventListResponse(BaseModel):
     skip: int
     limit: int
 
+
+# ==========================================
+# UEBA Schemas
+# ==========================================
+
+class UEBABaselineResponse(BaseModel):
+    id: int
+    behaviour_category: str
+    baseline_data: Dict[str, Any] = Field(default_factory=dict)
+    sample_count: int
+    confidence: float
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UEBAProfileResponse(BaseModel):
+    id: int
+    entity_id: str
+    entity_type: str
+    display_name: Optional[str] = None
+    baseline_status: str
+    risk_score: float
+    risk_level: str
+    learning_started_at: datetime
+    last_updated_at: datetime
+    baseline_version: int
+    metadata_info: Dict[str, Any] = Field(default_factory=dict)
+    anomalies_count: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UEBAProfileDetailResponse(UEBAProfileResponse):
+    baselines: List[UEBABaselineResponse] = Field(default_factory=list)
+    active_findings_count: int = 0
+    recent_activity_count: int = 0
+
+class UEBAFindingResponse(BaseModel):
+    id: int
+    finding_id: str
+    entity_id: str
+    entity_type: str
+    anomaly_type: str
+    detection_method: str
+    risk_score: float
+    confidence: float
+    severity: str
+    title: str
+    description: str
+    evidence: Dict[str, Any] = Field(default_factory=dict)
+    related_event_ids: List[str] = Field(default_factory=list)
+    recommended_steps: List[str] = Field(default_factory=list)
+    status: str
+    assigned_to: Optional[str] = None
+    is_demo: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UEBAFindingStatusUpdate(BaseModel):
+    status: str
+    assigned_to: Optional[str] = None
+    comments: Optional[str] = None
+
+class UEBAFeedbackCreate(BaseModel):
+    finding_id: str
+    feedback_type: str  # True Positive, False Positive, Expected Deviation, Authorized Testing
+    comments: Optional[str] = None
+
+class UEBAFeedbackResponse(BaseModel):
+    id: int
+    finding_id: str
+    analyst_id: str
+    feedback_type: str
+    comments: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UEBADashboardStats(BaseModel):
+    total_monitored_users: int
+    total_monitored_entities: int
+    entities_with_anomalies: int
+    high_risk_entities_count: int
+    new_findings_count: int
+    baseline_status_breakdown: Dict[str, int]
+    risk_distribution: Dict[str, int]
+    anomaly_categories: Dict[str, int]
+    recent_findings: List[UEBAFindingResponse]
+
+class UEBARiskScoreItem(BaseModel):
+    entity_id: str
+    entity_type: str
+    risk_score: float
+    risk_level: str
+    deviation_score: float
+    anomalies_count: int
+    contributing_factors: List[Dict[str, Any]] = Field(default_factory=list)
+
+class UEBATimelineItem(BaseModel):
+    timestamp: datetime
+    event_type: str
+    category: str
+    is_anomaly: bool
+    title: str
+    severity: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+class UEBADemoGenerateRequest(BaseModel):
+    scenario: Optional[str] = "all"  # unusual_login_time, dormant_account, mass_resource_access, auth_velocity, bulk_data_exfiltration, all
+    entity_id: Optional[str] = None
+
+

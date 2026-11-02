@@ -89,12 +89,23 @@ class DetectionEngine:
         db.commit()
         db.refresh(db_event)
 
-        # 5. Periodically prune correlation memory
+        # 5. Evaluate UEBA behavioural anomalies
+        ueba_findings = []
+        try:
+            from app.detection.ueba.finding_manager import finding_manager
+            ueba_findings = finding_manager.process_event(db, event)
+            if ueba_findings and detection_status == "Normal":
+                db_event.detection_status = "Under Triage"
+                db.commit()
+        except Exception as e:
+            print(f"Notice on UEBA processing: {e}")
+
+        # 6. Periodically prune correlation memory
         self._processed_counter += 1
         if self._processed_counter % 50 == 0:
             correlation_tracker.prune_old_records()
 
-        # 6. Broadcast NEW_EVENT over WebSocket for Live Recent Activity Feed
+        # 7. Broadcast NEW_EVENT over WebSocket for Live Recent Activity Feed
         try:
             ws_payload = {
                 "type": "NEW_EVENT",
@@ -127,6 +138,8 @@ class DetectionEngine:
             "matched_rules_count": len(matched_rules),
             "matched_rules": matched_rules,
             "alerts_created": created_alerts,
+            "ueba_findings_count": len(ueba_findings),
+            "ueba_findings": [f.finding_id for f in ueba_findings],
             "is_demo": event.is_demo
         }
 

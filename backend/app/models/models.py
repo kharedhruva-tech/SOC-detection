@@ -207,6 +207,7 @@ class DetectionRule(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 class SecurityEvent(Base):
     __tablename__ = "security_events"
     
@@ -268,4 +269,79 @@ class SecurityAlert(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ==========================================
+# UEBA (User and Entity Behaviour Analytics)
+# ==========================================
+
+class UEBAProfile(Base):
+    __tablename__ = "ueba_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    entity_id = Column(String, unique=True, index=True, nullable=False)  # username, hostname, or IP
+    entity_type = Column(String, index=True, default="user")  # user, endpoint, server, ip, service_account
+    display_name = Column(String, nullable=True)
+    baseline_status = Column(String, index=True, default="Learning")  # Learning, Established, Insufficient Data, Outdated
+    risk_score = Column(Float, default=0.0)  # 0 to 100
+    risk_level = Column(String, default="Low")  # Low, Medium, High, Critical
+    learning_started_at = Column(DateTime, default=datetime.utcnow)
+    last_updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    baseline_version = Column(Integer, default=1)
+    metadata_info = Column(JSON, default=dict)  # department, role, device_type, os, criticality
+    anomalies_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    baselines = relationship("UEBABaseline", back_populates="profile", cascade="all, delete-orphan")
+
+
+class UEBABaseline(Base):
+    __tablename__ = "ueba_baselines"
+
+    id = Column(Integer, primary_key=True, index=True)
+    profile_id = Column(Integer, ForeignKey("ueba_profiles.id", ondelete="CASCADE"), nullable=False)
+    behaviour_category = Column(String, index=True, nullable=False)  # login_hours, login_frequency, login_locations, resource_access, data_volume, session_duration
+    baseline_data = Column(JSON, default=dict)  # e.g. {"typical_hours": [9, 10, ...], "mean_data_mb": 15.2, "std_data_mb": 4.1}
+    sample_count = Column(Integer, default=0)
+    confidence = Column(Float, default=0.0)  # 0.0 to 1.0
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    profile = relationship("UEBAProfile", back_populates="baselines")
+
+
+class UEBAFinding(Base):
+    __tablename__ = "ueba_findings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    finding_id = Column(String, unique=True, index=True, nullable=False)  # UEBA-XXXX
+    entity_id = Column(String, index=True, nullable=False)
+    entity_type = Column(String, index=True, default="user")
+    anomaly_type = Column(String, index=True, nullable=False)  # Unusual Login Time, Inactive Account Activity, etc.
+    detection_method = Column(String, default="Statistical Z-Score")  # Statistical Z-Score, Rule-Based Baseline, Behavioral Deviation, Isolation Forest
+    risk_score = Column(Float, default=0.0)
+    confidence = Column(Float, default=0.8)  # 0.0 to 1.0
+    severity = Column(String, index=True, default="Medium")  # Low, Medium, High, Critical
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    evidence = Column(JSON, default=dict)  # current_value, expected_range, deviation_score, z_score, threshold
+    related_event_ids = Column(JSON, default=list)
+    recommended_steps = Column(JSON, default=list)  # investigation recommendations
+    status = Column(String, index=True, default="New")  # New, Investigating, Escalated, Resolved, False Positive
+    assigned_to = Column(String, nullable=True)
+    is_demo = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class UEBAFeedback(Base):
+    __tablename__ = "ueba_feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    finding_id = Column(String, index=True, nullable=False)
+    analyst_id = Column(String, nullable=False)
+    feedback_type = Column(String, nullable=False)  # True Positive, False Positive, Expected Deviation, Authorized Testing
+    comments = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 

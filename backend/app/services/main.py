@@ -18,6 +18,7 @@ from app.services.log_generator import log_generator
 from app.database_seed import seed_database
 from app.ws_manager import ws_manager
 from app.detection.rule_registry import rule_registry
+from app.detection.ueba.baseline_engine import baseline_engine
 
 # Safely verify/add compatibility columns and create database tables
 ensure_schema_compatibility()
@@ -43,8 +44,9 @@ async def lifespan(app: FastAPI):
         db = SessionLocal()
         rule_registry.seed_database(db)
         rule_registry.sync_from_database(db)
+        baseline_engine.seed_default_sample_profiles(db)
         db.close()
-        print("SIEM Detection Rules verified and synchronized.")
+        print("SIEM Detection Rules and UEBA Baselines verified and synchronized.")
     except Exception as e:
         print(f"SIEM Rule sync notice: {e}")
 
